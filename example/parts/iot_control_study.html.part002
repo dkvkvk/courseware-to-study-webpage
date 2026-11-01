@@ -1,0 +1,290 @@
+e(t)，经控制器得到控制量 u(t)，送执行机构作用于被控对象，被控对象还受扰动影响，输出 y(t) 经传感器反馈到比较点。"></div>
+    <ul>
+      <li><strong>基本功能单元</strong>：传感器（观测）、控制器（决策）、执行器（执行）。</li>
+      <li><strong>控制目标</strong>：<span class="m">y(t)=y_d</span>，即输出跟踪期望值，同时克服扰动的影响。</li>
+      <li><strong>框图组成</strong>：模块（方块）、信号线（带箭头）、运算符（比较点 ⊗，“−”表示负反馈）。</li>
+    </ul>
+    <h4>开环控制与闭环控制</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th></th><th>开环控制</th><th>闭环（反馈）控制</th></tr></thead>
+      <tbody>
+        <tr><td><strong>定义</strong></td><td>被控量对系统的控制作用<strong>没有影响</strong></td><td>被控量直接或间接地<strong>参与</strong>控制（负反馈）</td></tr>
+        <tr><td><strong>优点</strong></td><td>结构简单，能保证稳定</td><td>能自动纠正偏差，抗扰动，精度高</td></tr>
+        <tr><td><strong>缺点</strong></td><td>容易受扰动影响，有扰动时精度差</td><td>结构复杂一些；参数不当可能振荡、不稳定</td></tr>
+        <tr><td><strong>适用</strong></td><td>逻辑控制、顺序控制、扰动少的场合</td><td>复杂、扰动多、精度要求高的场合</td></tr>
+        <tr><td><strong>类比</strong></td><td>闭眼走路（适合简单场景）</td><td>睁眼走路（适合复杂场景）；盲人的拐杖相当于“眼睛”</td></tr>
+      </tbody></table></div>
+    <p class="small muted">注：闭环一栏的“缺点”是整理者结合 1.1 节“飞球调节器会振荡”的史实补充的。</p>
+    <div class="callout key"><span class="label">课件例子：直流电机调速系统（闭环）</span><p>电位器给出给定电压 <span class="m">U_g</span> → 放大器 → 直流电动机 D 带动负载。<strong>测速发电机</strong>把转速转换成电压 <span class="m">U_f</span> 反馈回来，与 <span class="m">U_g</span> 比较，用偏差 <span class="m">U_g-U_f</span> 去控制电机，转速就能自动稳定。</p></div>
+  </section>
+
+  <section class="sec" id="c1-2">
+    <h3>1.2 计算机控制系统</h3>
+    <p>把自动控制系统中的控制器换成<strong>数字计算机</strong>，就得到计算机控制系统。计算机只能处理数字量，所以要加入 <strong>A/D</strong>（模/数转换）和 <strong>D/A</strong>（数/模转换），计算机在<strong>时钟</strong>控制下按采样周期工作。</p>
+    <div class="diagram" id="bd-computer" role="img" aria-label="计算机控制系统方框图：期望值与经 A/D 转换的测量值在计算机中比较，计算机按控制算法计算，结果经 D/A 转换后驱动执行机构，作用于被控对象。"></div>
+    <p>数字计算机与 A/D、D/A 等合称<strong>计算机系统</strong>，它按照编好的程序（控制算法）产生控制指令。</p>
+    <div class="grid2">
+      <div class="box"><h5>硬件组成</h5><ul>
+        <li>主机：CPU、RAM / ROM / E²PROM / FLASH、定时器、系统总线、中断</li>
+        <li>过程通道：模拟量、数字量的输入、输出通道</li>
+        <li>人机与外设：操控台、显示器、打印机、外存、通信接口</li>
+        <li>现场：传感器、调理电路、放大驱动电路、执行机构</li>
+      </ul></div>
+      <div class="box"><h5>软件组成</h5><ul>
+        <li><strong>系统软件</strong>（一般由厂家提供）：实时操作系统、编译、诊断、调试、通信软件</li>
+        <li><strong>应用软件</strong>（由设计人员开发）：控制算法程序、输入输出接口程序、监控程序、信息管理程序</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="sec" id="c1-3">
+    <h3>1.3 物联网控制系统</h3>
+    <p><strong>物联网控制系统</strong>是以物联网为基础的计算机控制系统，也就是网络化控制系统（NCS）。在它的抽象结构中，多组“执行节点 — 被控对象 — 传感节点”和多个<strong>控制节点</strong>共享同一个物联网络。测量信号、控制信号和状态反馈都经过网络传输，形成双向闭环。</p>
+    <div class="lab" id="lab-bd">
+      <div class="lab-head"><span class="badge">交互</span><b>三类控制系统方框图对比</b><span class="hint">切换查看三种框图，看清它们新增了哪些环节。</span></div>
+      <div class="lab-body">
+        <div class="tabs" role="tablist" aria-label="选择框图类型">
+          <button role="tab" aria-selected="true" data-bd="auto">自动控制系统</button>
+          <button role="tab" aria-selected="false" data-bd="computer">计算机控制系统</button>
+          <button role="tab" aria-selected="false" data-bd="iot">物联网控制系统</button>
+        </div>
+        <div class="diagram" id="bd-switch" role="img" aria-live="polite"></div>
+        <p class="out" id="bd-note"></p>
+      </div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>系统</th><th>相对前者新增的环节</th><th>信号形式</th></tr></thead>
+      <tbody>
+        <tr><td>自动控制系统</td><td>— （无 A/D、D/A）</td><td>连续的模拟信号</td></tr>
+        <tr><td>计算机控制系统</td><td>A/D、D/A（控制器换成数字计算机）</td><td>采样后的数字信号 + 连续信号</td></tr>
+        <tr><td>物联网控制系统</td><td>在“控制器 → D/A”之间，以及“A/D → 比较点”之间插入<strong>网络</strong></td><td>数字信号经网络传输</td></tr>
+      </tbody></table></div>
+    <div class="callout key"><span class="label">联系</span><p>三者都是<strong>负反馈闭环</strong>：基本单元都是传感器、控制器、执行器，控制目标都是让 <span class="m">y(t)\to y_d</span>。后一种都是在前一种的基础上“加环节”得到的。</p></div>
+  </section>
+
+  <section class="sec" id="c1-4">
+    <h3>1.4 自动控制系统性能的基本要求：稳、准、快</h3>
+    <p>课件中的例子：把水从 25 ℃ 烧到 40 ℃；空调把室温从 35 ℃ 降到 25 ℃。可以先画一画“期望输出”和“实际输出”的曲线。</p>
+    <div class="grid2">
+      <div class="box"><div class="k">稳态 steady state</div><p><span class="m">t\to\infty</span> 时的状态 → 稳态性能：<strong>稳态误差</strong></p></div>
+      <div class="box"><div class="k">暂态 transient state</div><p>又称动态、瞬态，指过渡过程 → 暂态性能：<strong>上升时间、超调量</strong>等</p></div>
+    </div>
+    <h4>① 稳：稳定性，系统正常工作的首要条件</h4>
+    <ul>
+      <li><strong>平衡点</strong>（Equilibrium Point）：系统状态不再随时间变化的点，此时各阶导数都等于零。系统的稳定性指的是平衡点的稳定性。</li>
+      <li><strong>稳定的定义</strong>：系统受到干扰后，仍然能回到平衡点。例如单摆是稳定的，倒立摆是不稳定的。</li>
+      <li><strong>稳定的条件</strong>：系统<strong>全部特征根（极点）的实部小于零</strong>。第4章的传递函数会用到这一条。</li>
+    </ul>
+    <h4>② 准：稳态性能，控制的准确性</h4>
+    <p>单位阶跃函数 <span class="m">u(t)=0\ (t\lt0),\ u(t)=1\ (t\gt0)</span>，常用作测试输入。<strong>稳态误差</strong>的定义是：</p>
+    <span class="mb">e(\infty)=y_d-y(\infty)</span>
+    <p class="small muted">课件中画了比例系数 Kp = 1、0.2、0.05 时的阶跃响应曲线，Kp 不同，稳态值和稳态误差也不同。可以在第5章的 PID 实验中亲手试一试。</p>
+    <h4>③ 快：暂态性能，控制的快速性与平稳性</h4>
+    <div class="lab">
+      <div class="lab-head"><span class="badge">图示</span><b>单位阶跃响应 h(t) 与暂态指标</b><span class="hint">示例曲线：标准二阶系统，ξ = 0.4，ωn = 4 rad/s，误差带 ε = 5%。</span></div>
+      <div class="lab-body">
+        <div class="plotwrap"><canvas id="perfPlot" role="img" aria-label="欠阻尼阶跃响应曲线，标出了上升时间 Tr、峰值时间 Tm、调节时间 Tε 和超调量。"></canvas></div>
+        <div class="metrics" id="perfMetrics"></div>
+      </div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>指标</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>上升时间 <span class="m">T_r</span></td><td>响应第一次上升到接近稳态值所需的时间，反映<strong>快速性</strong>。课件图中用 0.9 的标线标出，本页仿真按“首次达到 0.9h(∞)”计算。</td></tr>
+        <tr><td>峰值时间 <span class="m">T_m</span></td><td>响应到达第一个峰值 <span class="m">h(T_m)</span> 的时间，反映<strong>快速性</strong>。</td></tr>
+        <tr><td>调节时间 <span class="m">T_\varepsilon</span></td><td>响应进入并保持在稳态值 <span class="m">\pm\varepsilon</span> 误差带（图中“2ε”）内所需的时间。</td></tr>
+        <tr><td>超调量 <span class="m">\sigma</span></td><td><span class="m">\sigma=\frac{h(T_m)-h(\infty)}{h(\infty)}\times100\%</span>，反映<strong>振荡程度</strong>（平稳性）。图中 <span class="m">\Delta h</span> 就是超出稳态值的部分。</td></tr>
+        <tr><td>稳态误差 <span class="m">e(\infty)</span></td><td>期望值与稳态值之差，反映<strong>准确性</strong>。</td></tr>
+      </tbody></table></div>
+    <p class="small muted">课件中的 MATLAB 阶跃响应图把曲线分成三段：上升阶段看暂态性能，衰减振荡阶段看稳定性，平直阶段看稳态性能。</p>
+  </section>
+
+  <section class="sec" id="c1-5">
+    <h3>1.5 计算机控制系统的类型 <span class="tag">自学</span></h3>
+    <div class="grid2">
+      <div class="box"><h5>操作指导控制系统（OIS）</h5><p><strong>开环</strong>。计算机只负责采集数据、显示和报警，由操作人员根据这些信息去操作。</p></div>
+      <div class="box"><h5>直接数字控制系统（DDC）</h5><p><strong>闭环</strong>。计算机通过 AI/DI 采集信号，按控制规律计算，再通过 AO/DO 直接控制执行机构。要求<strong>实时性好、可靠性高、适应性强</strong>。课件标注为重要。</p></div>
+      <div class="box"><h5>监督控制系统（SCC）</h5><p>按数学模型自动修改模拟调节器或 DDC 计算机的<strong>给定值</strong>，使生产过程处于最优工况。有 SCC + 模拟调节器、SCC + DDC 两种结构。</p></div>
+      <div class="box"><h5>集散控制系统（DCS）</h5><p><strong>分散控制、集中操作、分级管理</strong>。分三级：分散过程控制级（现场控制站、PLC、智能调节器）、集中操作监控级（工程师站、操作员站、监控计算机）、综合信息管理级。</p></div>
+    </div>
+    <p><strong>分级计算机控制系统</strong>，自上而下分四级：企业经营管理级 → 工厂集中控制级 → 车间监督级 → 装置控制级。</p>
+  </section>
+
+  <section class="sec" id="c1-6">
+    <h3>1.6 物联网远程控制 <span class="tag">自学</span></h3>
+    <p><strong>远程控制</strong>：主控端只发送控制指令、接收被控端回传的实时信息，具体的控制动作在被控端完成。控制模式有三种：<strong>远程控制、本地控制、调度控制</strong>。</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>通信方式</th><th>特点与问题</th></tr></thead>
+      <tbody>
+        <tr><td>无线电台</td><td>超短波容易受建筑物影响；频谱资源受管制；需要人工维护，存在干扰</td></tr>
+        <tr><td>拨号方式</td><td>只能点对点通信，需要电话线</td></tr>
+        <tr><td>数字线路</td><td>运行经济，但前期铺设投入大，需要中继，要防雷、防干扰</td></tr>
+        <tr><td>GPRS</td><td>基于 GSM 的分组交换，提供端到端的 IP 连接。链路：GPRS 模块 → GPRS 网络 → GSN → Internet → 端口映射 → 域名计算机 → 服务器程序</td></tr>
+        <tr><td>4G</td><td>TD-LTE / FDD-LTE，速率 100 Mbps 以上，约为 4 兆 ADSL 的 25 倍</td></tr>
+      </tbody></table></div>
+    <p><strong>网络遥操作</strong>链路：操作者 ↔ 主机械手 ↔ Internet ↔ 从机械手 ↔ 环境。例子是玉兔二号月球车。应用场景包括深海与太空探索、核辐射环境，以及远程医疗（会诊、教学、会议、手术）。</p>
+  </section>
+
+  <section class="sec" id="c1-hw">
+    <h3>本章重点与作业</h3>
+    <div class="callout warn"><span class="label">本章重点（课件）</span><ol><li>自动控制系统、计算机控制系统、物联网控制系统的方框图，以及三者的联系与区别。</li><li>控制系统的性能指标。</li></ol></div>
+    <details><summary>课上思考：教室空调（温度控制）系统<span class="src">参考答案为整理者补充</span></summary><div class="dbody">
+      <p><strong>(1) 方框图</strong>：设定温度 <span class="m">y_d</span> → 比较点 → 控制器（空调主控板） → 执行机构（压缩机、风机） → 被控对象（教室空气） → 室温 <span class="m">y(t)</span>；温度传感器把室温反馈到比较点。扰动包括人员散热、日照、开关门窗等。</p>
+      <p><strong>(2) 控制目标</strong>：让室温等于设定温度，即 <span class="m">y(t)=y_d</span>，并且能抵抗扰动。</p>
+      <p><strong>(3) 运行原理</strong>：传感器测出室温，与设定值比较得到偏差；控制器根据偏差调节压缩机、风机的工作状态；室温随之变化并不断被重新测量、比较，直到偏差趋近于零。这是一个负反馈过程。</p>
+    </div></details>
+    <details><summary>作业 1：以人抓取物体为例，阐述原理并绘制方框图<span class="src">参考答案</span></summary><div class="dbody">
+      <p><strong>原理</strong>：眼睛（传感器）观测手和物体的位置；大脑（控制器）比较两者，得到偏差并做出决策；手臂肌肉（执行器）驱动手（被控对象）移动。手的新位置又被眼睛观测，如此循环，直到偏差为零、抓到物体。</p>
+      <p><strong>方框图</strong>：物体位置（期望值） → ⊗ → 大脑 → 手臂肌肉 → 手 → 手的实际位置；眼睛构成反馈通路，接回 ⊗ 的“−”端。</p>
+    </div></details>
+    <details><summary>作业 2：三类方框图的联系与区别<span class="src">参考答案</span></summary><div class="dbody"><p>见 <a href="#c1-3">1.3 节对比表</a>。<strong>区别</strong>：计算机控制系统比自动控制系统多了 A/D、D/A；物联网控制系统又在“控制器 → D/A”和“A/D → 比较点”之间加入了网络。<strong>联系</strong>：三者都是负反馈闭环，都由传感器、控制器、执行器、被控对象组成，控制目标都是 <span class="m">y(t)=y_d</span>。</p></div></details>
+    <details><summary>作业 3：性能的基本要求与对应指标（画图、给出定义）<span class="src">参考答案</span></summary><div class="dbody"><p>基本要求是<strong>稳、准、快</strong>：稳对应稳定性，条件是全部极点实部小于零；准对应稳态误差 <span class="m">e(\infty)=y_d-y(\infty)</span>；快对应上升时间 <span class="m">T_r</span>、峰值时间 <span class="m">T_m</span>、调节时间 <span class="m">T_\varepsilon</span>，以及超调量 <span class="m">\sigma</span>。图见 <a href="#c1-4">1.4 节</a>。</p></div></details>
+  </section>
+</section>
+<!-- ================= 第4章 ================= -->
+<section class="chapter" id="c4">
+  <div class="chapter-head"><div class="num">CHAPTER 4</div><h2>第4章 自动控制系统建模</h2><p>本页包含 4.1—4.5。4.6、4.7（系统辨识、最小二乘法）不在这版课件里。</p></div>
+  <div class="grid2" style="margin-top:20px">
+    <div class="box"><div class="k">控制系统分析</div><p>已知<strong>模型</strong>和<strong>输入</strong>，求<strong>输出</strong>（性能）。</p></div>
+    <div class="box"><div class="k">控制系统设计</div><p>已知期望的<strong>性能</strong>，求<strong>控制系统</strong>（控制器）。</p></div>
+  </div>
+  <p>无论是分析还是设计，第一步都是建立数学模型。</p>
+
+  <section class="sec" id="c4-1">
+    <h3>4.1 数学模型的概念</h3>
+    <p><strong>数学模型</strong>是描述系统输入、输出变量以及内部各变量之间关系的数学表达式，它揭示了系统结构、参数与性能之间的内在关系。</p>
+    <p>微分方程的一般形式如下，阶数 <span class="m">n</span> 等于输出的最高阶导数：</p>
+    <span class="mb">\frac{d^n y}{dt^n}+a_1\frac{d^{n-1}y}{dt^{n-1}}+\cdots+a_n y=b_0\frac{d^m x}{dt^m}+b_1\frac{d^{m-1}x}{dt^{m-1}}+\cdots+b_m x</span>
+    <h4>相似系统</h4>
+    <p>物理性质完全不同的系统，可以有<strong>形式相同</strong>的数学模型：</p>
+    <div class="grid2">
+      <div class="box"><div class="k">机械系统（质量-弹簧-阻尼）</div><span class="mb">m\ddot X+f\dot X+kX=F</span></div>
+      <div class="box"><div class="k">RLC 电路</div><span class="mb">LC\ddot U_c+RC\dot U_c+U_c=U_r</span></div>
+    </div>
+    <h4>静态模型与动态模型</h4>
+    <ul>
+      <li><strong>静态模型</strong>：变量的各阶导数为零，是代数方程，描述稳态时的输入输出关系。</li>
+      <li><strong>动态模型</strong>：变量的各阶导数不为零，是微分方程。输出不仅与当前输入有关，还与过去的状态有关。</li>
+    </ul>
+    <h4>数学模型的形式</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th>域</th><th>模型形式</th></tr></thead>
+      <tbody>
+        <tr><td>时域</td><td>微分方程、差分方程、状态方程（一阶微分方程组）</td></tr>
+        <tr><td>复数域</td><td>传递函数、结构图</td></tr>
+      </tbody></table></div>
+    <div class="callout key"><span class="label">要点</span><p><strong>微分方程</strong>是最基本的数学模型，也是列写传递函数的基础。</p></div>
+    <h4>线性与非线性、定常与时变</h4>
+    <ul>
+      <li><strong>线性系统</strong>：方程中只含变量及其各阶导数的<strong>一次幂</strong>，并且没有常数项。线性系统满足<strong>叠加原理</strong>：<span class="m">f(x_1+x_2)=f(x_1)+f(x_2)</span>。</li>
+      <li><strong>非线性系统</strong>：不满足叠加原理。实际系统通常都是非线性的，在合理条件下可以近似成线性系统。</li>
+      <li><strong>时不变（定常）系统</strong>：方程的系数全部是常数。<strong>时变系统</strong>：至少有一个系数是时间的函数。</li>
+    </ul>
+    <div class="callout warn"><span class="label">判别示例（课件）</span><ul>
+      <li>在线性方程右边加一个常数项（如 <span class="m">+5</span>）→ 不满足叠加原理 → <strong>非线性</strong>。</li>
+      <li>方程中出现 <span class="m">a_n\sqrt{y}</span> 这类项 → 不是一次幂 → <strong>非线性</strong>。</li>
+    </ul></div>
+    <div class="callout key"><span class="label">重点概念</span><p><strong>线性定常系统</strong>（LTI，linear time-invariant）是本课程主要研究的对象。</p></div>
+  </section>
+
+  <section class="sec" id="c4-2">
+    <h3>4.2 微分方程模型</h3>
+    <p>线性定常系统微分方程的一般形式如下，其中 <span class="m">a_i,b_j</span> 是实常数，<span class="m">m\le n</span>：</p>
+    <span class="mb">a_0\frac{d^n y}{dt^n}+a_1\frac{d^{n-1}y}{dt^{n-1}}+\cdots+a_n y=b_0\frac{d^m x}{dt^m}+\cdots+b_m x</span>
+    <div class="grid2">
+      <div class="box"><h5>解析法（机理建模）</h5><p>依据系统各部分遵循的物理、化学规律，列写运动方程。</p></div>
+      <div class="box"><h5>实验法（系统辨识）</h5><p>给系统施加测试信号，记录输出响应，再用数学模型去逼近，也叫<strong>系统辨识</strong>。</p></div>
+    </div>
+    <h4>列写微分方程的步骤</h4>
+    <ol class="steps">
+      <li>确定系统的<strong>输入、输出</strong>变量。</li>
+      <li>从输入端开始，按信号传递顺序，依据物理定律列写各元件的微分方程（组）。</li>
+      <li><strong>消去中间变量</strong>，得到只含输入、输出的方程。</li>
+      <li><strong>标准化</strong>：与输入有关的项写在等号右边，与输出有关的项写在左边，两边都按降幂排列。</li>
+    </ol>
+    <div class="tablewrap"><table>
+      <thead><tr><th>元件</th><th>电压与电流的关系</th></tr></thead>
+      <tbody>
+        <tr><td>电阻 R</td><td><span class="m">u=Ri</span></td></tr>
+        <tr><td>电容 C</td><td><span class="m">u=\frac{1}{C}\int i\,dt</span></td></tr>
+        <tr><td>电感 L</td><td><span class="m">u=L\frac{di}{dt}</span></td></tr>
+      </tbody></table></div>
+    <h4>例：RLC 串联电路（输入 <span class="m">u_i</span>，输出为电容电压 <span class="m">u_0</span>）</h4>
+    <p>由基尔霍夫电压定律：</p>
+    <span class="mb">u_i=Ri+L\frac{di}{dt}+\frac{1}{C}\int i\,dt,\qquad u_0=\frac{1}{C}\int i\,dt</span>
+    <p>由第二式得 <span class="m">i=C\dot u_0</span>，代入第一式消去中间变量 <span class="m">i</span>，得到二阶常系数线性微分方程：</p>
+    <span class="mb">LC\frac{d^2u_0}{dt^2}+RC\frac{du_0}{dt}+u_0=u_i</span>
+    <h4>应用实例</h4>
+    <p><strong>电热水器温度控制</strong>（被控对象是水）和<strong>电动汽车速度控制</strong>（被控对象是电机），都要按“建立模型 → 设计控制器（如第5章的 PID） → 分析性能”的流程来做。</p>
+    <h4>例：直流电动机（输入电枢电压 <span class="m">e_i</span>，输出转角 <span class="m">\theta</span>）</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th>物理定律</th><th>方程</th></tr></thead>
+      <tbody>
+        <tr><td>磁场对载流线圈的作用</td><td><span class="m">T=K_T i_a</span></td></tr>
+        <tr><td>基尔霍夫定律（电枢回路）</td><td><span class="m">e_i=R_a i_a+L_a\frac{di_a}{dt}+e_m</span></td></tr>
+        <tr><td>电磁感应定律（反电动势）</td><td><span class="m">e_m=K_e\frac{d\theta}{dt}</span></td></tr>
+        <tr><td>牛顿第二定律（转动）</td><td><span class="m">T-D\frac{d\theta}{dt}=J\frac{d^2\theta}{dt^2}</span></td></tr>
+      </tbody></table></div>
+    <p>消去中间变量 <span class="m">T,i_a,e_m</span>，得到三阶微分方程：</p>
+    <span class="mb">L_aJ\frac{d^3\theta}{dt^3}+(L_aD+R_aJ)\frac{d^2\theta}{dt^2}+(R_aD+K_TK_e)\frac{d\theta}{dt}=K_Te_i</span>
+    <p>电枢电感 <span class="m">L_a</span> 很小、可以忽略时，简化为：</p>
+    <span class="mb">R_aJ\frac{d^2\theta}{dt^2}+(R_aD+K_TK_e)\frac{d\theta}{dt}=K_Te_i</span>
+    <details><summary>消元过程<span class="src">补充推导</span></summary><div class="dbody">
+      <p>由牛顿第二定律和 <span class="m">T=K_Ti_a</span> 得 <span class="m">i_a=\frac{1}{K_T}(J\ddot\theta+D\dot\theta)</span>。把它和 <span class="m">e_m=K_e\dot\theta</span> 代入电枢回路方程，两边同乘 <span class="m">K_T</span>：</p>
+      <span class="mb">K_Te_i=R_a(J\ddot\theta+D\dot\theta)+L_a(J\dddot\theta+D\ddot\theta)+K_TK_e\dot\theta</span>
+      <p>按导数阶次整理，就得到上面的三阶方程。</p>
+    </div></details>
+  </section>
+
+  <section class="sec" id="c4-3">
+    <h3>4.3 拉普拉斯变换</h3>
+    <span class="mb">F(s)=L[f(t)]=\int_{0_-}^{\infty}f(t)e^{-st}dt,\qquad s=\sigma+j\omega</span>
+    <ul>
+      <li>把<strong>时域</strong>函数变换到<strong>复频域</strong>：微分、积分运算变成乘、除运算，<strong>微分方程变成代数方程</strong>，求解大大简化。主要用于<strong>系统分析</strong>。</li>
+      <li>对比<strong>傅里叶变换</strong>：<span class="m">F(\omega)=\int_{-\infty}^{\infty}f(t)e^{-j\omega t}dt</span>，反变换为 <span class="m">f(t)=\frac{1}{2\pi}\int_{-\infty}^{\infty}F(\omega)e^{j\omega t}d\omega</span>。它把时域变换到频域，可以看作拉氏变换的特例（<span class="m">\sigma=0</span>），主要用于<strong>信号处理</strong>。</li>
+    </ul>
+    <h4>典型函数的拉氏变换</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th>函数</th><th>定义</th><th>拉氏变换</th></tr></thead>
+      <tbody>
+        <tr><td>单位脉冲（冲激）</td><td><span class="m">\delta(t)=0\ (t\ne0)</span>，且 <span class="m">\int\delta(t)dt=1</span></td><td><span class="m">1</span></td></tr>
+        <tr><td>单位阶跃</td><td><span class="m">1(t)=1\ (t\gt0)</span></td><td><span class="m">\frac{1}{s}</span>（<span class="m">\mathrm{Re}\,s\gt0</span>）</td></tr>
+        <tr><td>单位斜坡</td><td><span class="m">t\ (t\ge0)</span></td><td><span class="m">\frac{1}{s^2}</span></td></tr>
+        <tr><td>指数函数</td><td><span class="m">e^{-at}</span></td><td><span class="m">\frac{1}{s+a}</span></td></tr>
+        <tr><td>正弦函数</td><td><span class="m">\sin\omega t</span></td><td><span class="m">\frac{\omega}{s^2+\omega^2}</span></td></tr>
+        <tr><td>余弦函数</td><td><span class="m">\cos\omega t</span></td><td><span class="m">\frac{s}{s^2+\omega^2}</span></td></tr>
+      </tbody></table></div>
+    <details><summary>推导过程<span class="src">课件推导整理</span></summary><div class="dbody">
+      <p><strong>单位脉冲</strong>：<span class="m">L[\delta(t)]=\int_{0_-}^{\infty}\delta(t)e^{-st}dt=e^{0}=1</span></p>
+      <p><strong>单位阶跃</strong>：<span class="m">L[1(t)]=\int_0^{\infty}e^{-st}dt=\left[-\frac{1}{s}e^{-st}\right]_0^{\infty}=\frac{1}{s}</span></p>
+      <p><strong>单位斜坡</strong>（分部积分）：<span class="m">\int_0^{\infty}te^{-st}dt=\left[-\frac{t}{s}e^{-st}\right]_0^{\infty}+\frac{1}{s}\int_0^{\infty}e^{-st}dt=\frac{1}{s^2}</span></p>
+      <p><strong>指数函数</strong>：<span class="m">\int_0^{\infty}e^{-at}e^{-st}dt=\int_0^{\infty}e^{-(s+a)t}dt=\frac{1}{s+a}</span></p>
+      <p><strong>正弦函数</strong>（欧拉公式 <span class="m">\sin\omega t=\frac{e^{j\omega t}-e^{-j\omega t}}{2j}</span>）：</p>
+      <span class="mb">L[\sin\omega t]=\frac{1}{2j}\left(\frac{1}{s-j\omega}-\frac{1}{s+j\omega}\right)=\frac{\omega}{s^2+\omega^2}</span>
+      <p>同理，由 <span class="m">\cos\omega t=\frac{e^{j\omega t}+e^{-j\omega t}}{2}</span> 得 <span class="m">L[\cos\omega t]=\frac{s}{s^2+\omega^2}</span>。</p>
+    </div></details>
+
+    <div class="lab" id="lab-lt">
+      <div class="lab-head"><span class="badge">速查</span><b>拉氏变换表（课件 21 项）</b><span class="hint">可以按关键词筛选，例如“指数”“正弦”“阶跃”“振荡”。</span></div>
+      <div class="lab-body">
+        <label class="field" for="ltSearch"><span>筛选</span><input type="search" id="ltSearch" placeholder="输入关键词，如：指数、sin、t e"></label>
+        <div class="tablewrap"><table id="ltTable"><thead><tr><th class="c">#</th><th>F(s)</th><th>f(t)，t ≥ 0</th><th>类型</th></tr></thead><tbody></tbody></table></div>
+        <p class="small muted" id="ltCount"></p>
+        <div class="callout err"><span class="label">课件勘误</span><p>第 15 项在课件中印成 <span class="m">\frac{a^2}{s(s+a)}</span>，与原函数 <span class="m">1-e^{-at}(1+at)</span> 对应的应是 <span class="m">\frac{a^2}{s(s+a)^2}</span>，本表已改正。</p></div>
+      </div>
+    </div>
+
+    <h4>拉氏变换的基本性质</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th>性质</th><th>公式</th></tr></thead>
+      <tbody>
+        <tr><td>线性定理</td><td><span class="m">L[\alpha f_1(t)+\beta f_2(t)]=\alpha F_1(s)+\beta F_2(s)</span></td></tr>
+        <tr><td>微分定理</td><td><span class="m">L[f'(t)]=sF(s)-f(0)</span><br><span class="m">L[y''(t)]=s^2Y(s)-sy(0)-y'(0)</span><br><span class="m">L[y'''(t)]=s^3Y(s)-s^2y(0)-sy'(0)-y''(0)</span><br><span class="m">L[y^{(m)}(t)]=s^mY(s)-s^{m-1}y(0)-\cdots-y^{(m-1)}(0)</span></td></tr>
+        <tr><td>初值定理</td><td><span class="m">f(0)=\lim_{s\to\infty}sF(s)</span></td></tr>
+        <tr><td>终值定理</td><td><span class="m">f(\infty)=\lim_{s\to0}sF(s)</span>（重点，课件 P45）</td></tr>
+      </tbody></table></div>
+    <p class="small muted">注：课件中三阶导数公式的最后一项写成 y²(0)，正确写法是 y''(0)，即二阶导数的初值。</p>
+    <div class="callout warn"><span class="label">终值定理的适用条件</span><p><span class="m">sY(s)</span> 的极点必须<strong>全部在 s 左半平面</strong>，也就是 <span class="m">y(t)</span> 确实存在稳态值。</p></div>
+    <div class="grid2">
+      <div class="box"><div class="k">正例</div><p><span class="m">Y(s)=\frac{3(s+2)}{s(s^2+2s+10)}</span></p><p><span class="m">sY(s)=\frac{3(s+2)}{s^2+2s+10}</span>，极点 <span class="m">-1\pm j3</span> 在左半平面，可以使用定理：</p><p><span class="m">y(\infty)=\lim_{s\to0}\frac{3(s+2)}{s^2+2s+10}=\frac{6}{10}=0.6</span></p></div>
+      <div class="box"><div class="k">反例</div><p><span class="m">Y(s)=\frac{3}{s(s-2)}</span>，<span class="m">sY(s)=\frac{3}{s-2}</span> 的极点 <span class="m">+2</span> 在右半平面。</p><p>硬套公式会得到 <span class="m">-\frac{3}{2}</span>，这是<strong>错的</strong>。实际上 <span class="m">y(t)=\frac{3}{2}(-1+e^{2t})\to\infty</span>，
