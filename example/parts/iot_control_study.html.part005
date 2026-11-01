@@ -1,0 +1,379 @@
+im:true};
+      if(n==='int')return {h:'<span class="int">∫</span>'};
+      if(FN.indexOf(n)>=0)return {h:'<span class="fnm">'+n+'</span>'};
+      if(n in SPACES)return {h:SPACES[n]};
+      if(SYM[n])return {h:SYM[n]};
+      if(OPS[n])return {h:'<span class="bo">'+OPS[n]+'</span>'};
+      if(RELS[n])return {h:'<span class="rel">'+esc(RELS[n])+'</span>'};
+      if(n==='{'||n==='}'||n==='%'||n==='|')return {h:n};
+      return {h:esc('\\'+n)};
+    }
+    i++;
+    if(/[A-Za-z]/.test(c))return {h:'<i>'+c+'</i>'};
+    if(c==='-')return {h:'<span class="bo">−</span>'};
+    if(c==='+')return {h:'<span class="bo">+</span>'};
+    if(c==='=')return {h:'<span class="rel">=</span>'};
+    if(c==="'")return {h:'′'};
+    if(c==='<'||c==='>')return {h:'<span class="rel">'+esc(c)+'</span>'};
+    return {h:esc(c)};
+  }
+  return seq(false);
+}
+function renderMath(root){
+  (root||document).querySelectorAll('.m,.mb').forEach(function(el){
+    if(el.dataset.done)return; var src=el.textContent; el.dataset.done='1';
+    el.setAttribute('aria-label',src.replace(/\\/g,' ')); el.innerHTML=tex(src);
+  });
+}
+window.__tex=tex;
+
+/* ====================== 通用工具 ====================== */
+function $(id){return document.getElementById(id);}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function fmt(x,d){ if(x===null||x===undefined||!isFinite(x))return '—'; d=(d===undefined)?3:d; var v=Math.abs(x)<Math.pow(10,-d)/2?0:x; return v.toFixed(d).replace(/\.?0+$/,'').replace('-','−'); }
+function fmtFixed(x,d){ if(!isFinite(x))return '—'; var v=Math.abs(x)<Math.pow(10,-d)/2?0:x; return v.toFixed(d).replace('-','−'); }
+/* 复数 */
+function C(re,im){return {re:re,im:im||0};}
+function cadd(a,b){return C(a.re+b.re,a.im+b.im);} function csub(a,b){return C(a.re-b.re,a.im-b.im);}
+function cmul(a,b){return C(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re);}
+function cdiv(a,b){var d=b.re*b.re+b.im*b.im; return C((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d);}
+function cabs(a){return Math.hypot(a.re,a.im);}
+function cexp(a){var e=Math.exp(a.re); return C(e*Math.cos(a.im),e*Math.sin(a.im));}
+function polyEval(coef,z){var r=C(0,0); for(var k=0;k<coef.length;k++){r=cadd(cmul(r,z),C(coef[k],0));} return r;}
+/* 首一多项式求根：[1,a1,...,an] */
+function roots(c){
+  var n=c.length-1;
+  if(n<1)return [];
+  if(n===1)return [C(-c[1],0)];
+  if(n===2){var b=c[1],q=c[2],D=b*b-4*q; if(D>=0){var sq=Math.sqrt(D); return [C((-b+sq)/2),C((-b-sq)/2)];} var si=Math.sqrt(-D); return [C(-b/2,si/2),C(-b/2,-si/2)];}
+  var R=1; for(var k=1;k<=n;k++)R=Math.max(R,Math.pow(Math.abs(c[k]),1/k)); R*=1.2;
+  var z=[]; for(k=0;k<n;k++){var ang=2*Math.PI*k/n+0.7; z.push(C(R*Math.cos(ang),R*Math.sin(ang)));}
+  for(var it=0;it<800;it++){
+    var maxd=0;
+    for(k=0;k<n;k++){var num=polyEval(c,z[k]),den=C(1,0); for(var j=0;j<n;j++)if(j!==k)den=cmul(den,csub(z[k],z[j])); var dz=cdiv(num,den); z[k]=csub(z[k],dz); maxd=Math.max(maxd,cabs(dz));}
+    if(maxd<1e-13)break;
+  }
+  z.forEach(function(p){if(Math.abs(p.im)<1e-7*Math.max(1,Math.abs(p.re)))p.im=0;});
+  return z;
+}
+/* 四阶龙格-库塔 */
+function rk4(f,x,t,h){
+  var k1=f(t,x),n=x.length,a=new Array(n),b=new Array(n),c=new Array(n),i;
+  for(i=0;i<n;i++)a[i]=x[i]+h/2*k1[i]; var k2=f(t+h/2,a);
+  for(i=0;i<n;i++)b[i]=x[i]+h/2*k2[i]; var k3=f(t+h/2,b);
+  for(i=0;i<n;i++)c[i]=x[i]+h*k3[i]; var k4=f(t+h,c);
+  var o=new Array(n); for(i=0;i<n;i++)o[i]=x[i]+h/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]); return o;
+}
+/* 阶跃响应指标 */
+function stepMetrics(t,y,yinf,eps){
+  var n=y.length,peak=-Infinity,ip=0,k;
+  for(k=0;k<n;k++){if(y[k]>peak){peak=y[k];ip=k;}}
+  var m={peak:peak,os:0,Tm:null,Tr:null,Ts:null};
+  if(!isFinite(yinf)||Math.abs(yinf)<1e-9)return m;
+  if(peak>yinf*(1+1e-4)&&ip<n-1){m.os=(peak-yinf)/Math.abs(yinf)*100; m.Tm=t[ip];}
+  var th=0.9*yinf;
+  for(k=1;k<n;k++){if(y[k]>=th){m.Tr=t[k-1]+(th-y[k-1])/(y[k]-y[k-1])*(t[k]-t[k-1]); break;}}
+  var last=-1; for(k=0;k<n;k++){if(Math.abs(y[k]-yinf)>eps*Math.abs(yinf))last=k;}
+  if(last<0)m.Ts=0; else if(last<n-1)m.Ts=t[last+1]; else m.Ts=null;
+  return m;
+}
+
+/* ====================== 画布绘图 ====================== */
+var CANVASES=[];
+function nice(min,max,count){
+  if(!(max>min))max=min+1;
+  var span=max-min,step=Math.pow(10,Math.floor(Math.log10(span/count))),err=span/count/step;
+  if(err>=7.5)step*=10; else if(err>=3.5)step*=5; else if(err>=1.5)step*=2;
+  var lo=Math.floor(min/step+1e-9)*step,hi=Math.ceil(max/step-1e-9)*step,ticks=[];
+  for(var v=lo;v<=hi+step*1e-6;v+=step)ticks.push(Math.abs(v)<step*1e-9?0:v);
+  return {lo:lo,hi:hi,step:step,ticks:ticks};
+}
+function tickLabel(v,step){var d=Math.max(0,-Math.floor(Math.log10(step)+1e-9)); return v.toFixed(Math.min(d,3)).replace('-','−');}
+function plot(cv,cfg){
+  cv._cfg=cfg;
+  if(!cv._reg){cv._reg=1; CANVASES.push(cv); if(window.ResizeObserver){var ro=new ResizeObserver(function(){draw(cv);}); ro.observe(cv);}}
+  draw(cv);
+}
+function draw(cv){
+  var cfg=cv._cfg; if(!cfg)return;
+  var W=cv.clientWidth,H=cv.clientHeight; if(!W||!H)return;
+  var dpr=window.devicePixelRatio||1; cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  var g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  var col={text:cssv('--text'),muted:cssv('--muted'),border:cssv('--border')};
+  var font=cssv('--sans')||'sans-serif';
+  var xmin=cfg.xmin,xmax=cfg.xmax,ymin=cfg.ymin,ymax=cfg.ymax;
+  if(ymin==null||ymax==null){
+    var lo=Infinity,hi=-Infinity;
+    cfg.series.forEach(function(s){for(var k=0;k<s.y.length;k++){var v=s.y[k]; if(isFinite(v)){if(v<lo)lo=v; if(v>hi)hi=v;}}});
+    (cfg.hlines||[]).forEach(function(h){lo=Math.min(lo,h.y);hi=Math.max(hi,h.y);});
+    if(!isFinite(lo)){lo=0;hi=1;}
+    if(cfg.zero!==false){lo=Math.min(lo,0);hi=Math.max(hi,0);}
+    var pd=(hi-lo)*0.06||0.5;
+    if(ymin==null)ymin=lo<0?lo-pd:lo; if(ymax==null)ymax=hi+pd;
+  }
+  var yt=nice(ymin,ymax,H<230?4:5);
+  if(cfg.ymin==null)ymin=yt.lo; if(cfg.ymax==null)ymax=yt.hi;
+  var xt=nice(xmin,xmax,W<440?4:7);
+  g.font='12px '+font;
+  var lw=0; yt.ticks.forEach(function(v){if(v>=ymin-1e-9&&v<=ymax+1e-9)lw=Math.max(lw,g.measureText(tickLabel(v,yt.step)).width);});
+  var pad={l:Math.ceil(lw)+10,r:10,t:10,b:cfg.xlabel?38:24};
+  var PW=W-pad.l-pad.r,PH=H-pad.t-pad.b;
+  function X(x){return pad.l+(x-xmin)/(xmax-xmin)*PW;}
+  function Y(y){return pad.t+(1-(y-ymin)/(ymax-ymin))*PH;}
+  (cfg.bands||[]).forEach(function(b){g.fillStyle=b.color; var y1=Y(Math.min(ymax,b.y1)),y0=Y(Math.max(ymin,b.y0)); g.fillRect(pad.l,y1,PW,y0-y1);});
+  g.lineWidth=1; g.strokeStyle=col.border; g.fillStyle=col.muted; g.textAlign='right'; g.textBaseline='middle';
+  yt.ticks.forEach(function(v){if(v<ymin-1e-9||v>ymax+1e-9)return; var y=Math.round(Y(v))+0.5; g.beginPath(); g.moveTo(pad.l,y); g.lineTo(pad.l+PW,y); g.stroke(); g.fillText(tickLabel(v,yt.step),pad.l-6,y);});
+  g.textAlign='center'; g.textBaseline='top';
+  xt.ticks.forEach(function(v){if(v<xmin-1e-9||v>xmax+1e-9)return; g.fillText(tickLabel(v,xt.step),Math.min(Math.max(X(v),pad.l+8),W-12),pad.t+PH+6);});
+  g.strokeStyle=col.muted; g.beginPath(); var y0=Math.round(Y(Math.max(ymin,Math.min(ymax,0))))+0.5; g.moveTo(pad.l,y0); g.lineTo(pad.l+PW,y0); g.stroke();
+  g.beginPath(); g.moveTo(pad.l+0.5,pad.t); g.lineTo(pad.l+0.5,pad.t+PH); g.stroke();
+  if(cfg.xlabel){g.textAlign='right'; g.textBaseline='top'; g.fillStyle=col.muted; g.fillText(cfg.xlabel,pad.l+PW,pad.t+PH+21);}
+  g.save(); g.beginPath(); g.rect(pad.l,pad.t-2,PW,PH+4); g.clip();
+  (cfg.hlines||[]).forEach(function(h){g.strokeStyle=h.color||col.muted; g.setLineDash(h.dash||[5,4]); g.lineWidth=1.2; g.beginPath(); g.moveTo(pad.l,Y(h.y)); g.lineTo(pad.l+PW,Y(h.y)); g.stroke();});
+  (cfg.vlines||[]).forEach(function(v){g.strokeStyle=v.color||col.muted; g.setLineDash([3,3]); g.lineWidth=1; g.beginPath(); g.moveTo(X(v.x),pad.t); g.lineTo(X(v.x),pad.t+PH); g.stroke();});
+  g.setLineDash([]);
+  var span=ymax-ymin;
+  cfg.series.forEach(function(s){
+    if(s.dash)g.setLineDash(s.dash); else g.setLineDash([]);
+    g.strokeStyle=s.color; g.lineWidth=s.width||2; g.lineJoin='round'; g.beginPath(); var pen=false,py=0;
+    for(var k=0;k<s.x.length;k++){var v=s.y[k]; if(!isFinite(v)){pen=false;continue;} var yy=Y(Math.max(ymin-span,Math.min(ymax+span,v))),xx=X(s.x[k]);
+      if(!pen){g.moveTo(xx,yy);pen=true;} else {if(s.stairs)g.lineTo(xx,py); g.lineTo(xx,yy);} py=yy;}
+    g.stroke();
+  });
+  g.setLineDash([]);
+  g.restore();
+  g.font='12px '+font;
+  (cfg.vlines||[]).forEach(function(v){if(!v.label)return; g.fillStyle=col.text; g.textAlign='center'; g.textBaseline='bottom'; var x=Math.min(Math.max(X(v.x),pad.l+12),pad.l+PW-12); g.fillText(v.label,x,pad.t+PH-3);});
+  (cfg.hlines||[]).forEach(function(h){if(!h.label)return; g.fillStyle=col.muted; var L=h.pos==='left'; g.textAlign=L?'left':'right'; var below=h.va==='below'; g.textBaseline=below?'top':'bottom'; g.fillText(h.label,L?pad.l+6:pad.l+PW-4,Y(h.ly!=null?h.ly:h.y)+(below?3:-3));});
+  (cfg.points||[]).forEach(function(p){g.fillStyle=p.color; g.beginPath(); g.arc(X(p.x),Y(p.y),4,0,7); g.fill(); if(p.label){g.fillStyle=col.text; g.textAlign='left'; g.textBaseline='bottom'; var tx=X(p.x)+7; if(tx+g.measureText(p.label).width>pad.l+PW){g.textAlign='right'; tx=X(p.x)-7;} g.fillText(p.label,tx,Y(p.y)-3);}});
+}
+function redrawAll(){CANVASES.forEach(draw);}
+
+/* ====================== s 平面 ====================== */
+var SVGNS='http://www.w3.org/2000/svg';
+function splane(svg,poles,zeros,opt){
+  opt=opt||{}; var W=280,H=230,m=16,PW=W-2*m,PH=H-2*m;
+  var all=poles.concat(zeros),A=0,rlo=0,rhi=0,ih=0;
+  all.forEach(function(p){A=Math.max(A,Math.abs(p.re),Math.abs(p.im)); rlo=Math.min(rlo,p.re); rhi=Math.max(rhi,p.re); ih=Math.max(ih,Math.abs(p.im));});
+  if(A<1e-9)A=1; var pad=0.28*A;
+  var xlo=Math.min(rlo-pad,-0.6*A),xhi=Math.max(rhi+pad,0.3*A),yh=Math.max(ih+pad,0.45*A);
+  var sc=Math.min(PW/(xhi-xlo),PH/(2*yh)); // 等比例
+  var ex=(PW/sc-(xhi-xlo))/2; xlo-=ex; xhi+=ex; yh=PH/sc/2;
+  function X(v){return m+(v-xlo)*sc;} function Y(v){return m+(yh-v)*sc;}
+  var cx=X(0),cy=Y(0),step=nice(0,Math.max(xhi-xlo,2*yh),5).step,h='';
+  var mk=all.map(function(p){return [X(p.re),Y(p.im)];});
+  function free(x,y,r){return mk.every(function(q){return Math.abs(q[0]-x)>r||Math.abs(q[1]-y)>r;});}
+  h+='<rect x="'+m+'" y="'+m+'" width="'+Math.max(0,cx-m)+'" height="'+PH+'" style="fill:var(--green-soft)"/>';
+  h+='<line x1="'+m+'" y1="'+cy+'" x2="'+(W-m)+'" y2="'+cy+'" class="ln" marker-end="url(#ah)"/>';
+  h+='<line x1="'+cx+'" y1="'+(H-m)+'" x2="'+cx+'" y2="'+m+'" class="ln" marker-end="url(#ah)"/>';
+  h+='<text x="'+(W-m-2)+'" y="'+(cy-7)+'" text-anchor="end" style="fill:var(--muted);font-size:12px">Re</text>';
+  h+='<text x="'+(cx+7)+'" y="'+(m+10)+'" style="fill:var(--muted);font-size:12px">Im</text>';
+  var v,u,k;
+  for(k=Math.ceil(xlo/step);k*step<xhi-step*0.25;k++){u=k*step; if(Math.abs(u)<1e-9)continue; var tx=X(u);
+    h+='<line x1="'+tx+'" y1="'+(cy-3)+'" x2="'+tx+'" y2="'+(cy+3)+'" class="ln"/>';
+    if(tx>m+8&&free(tx,cy+11,11))h+='<text x="'+tx+'" y="'+(cy+15)+'" text-anchor="middle" style="fill:var(--muted);font-size:11px">'+tickLabel(u,step)+'</text>';}
+  for(k=Math.ceil(-yh/step);k*step<yh-step*0.25;k++){u=k*step; if(Math.abs(u)<1e-9)continue; var ty=Y(u);
+    h+='<line x1="'+(cx-3)+'" y1="'+ty+'" x2="'+(cx+3)+'" y2="'+ty+'" class="ln"/>';
+    if(ty>m+12&&free(cx-16,ty,14))h+='<text x="'+(cx-9)+'" y="'+(ty+4)+'" text-anchor="end" style="fill:var(--muted);font-size:11px">'+tickLabel(u,step)+'j</text>';}
+  var lw=cx-m,lx=m+6,pick=null;
+  function boxFree(x0,y0,tw){return mk.every(function(q){return q[0]<x0-8||q[0]>x0+tw+8||q[1]<y0-16||q[1]>y0+8;});}
+  var LL='稳定区（左半平面）',SL='稳定区';
+  [[LL,H-m-7],[LL,m+18],[SL,H-m-7],[SL,m+18],[LL,cy+36],[SL,cy+36],[SL,cy-24]].forEach(function(c){var tw=c[0].length*12+4; if(!pick&&tw<=lw-10&&boxFree(lx,c[1],tw))pick=c;});
+  if(pick)h+='<text x="'+lx+'" y="'+pick[1]+'" style="fill:var(--green-text);font-size:12px">'+pick[0]+'</text>';
+  zeros.forEach(function(z){h+='<circle cx="'+X(z.re)+'" cy="'+Y(z.im)+'" r="6" style="fill:var(--canvas);stroke:var(--text);stroke-width:2"/>';});
+  poles.forEach(function(p){var x=X(p.re),y=Y(p.im),d=6,c=p.re<-1e-9?'var(--blue)':'var(--red)';
+    h+='<path d="M'+(x-d)+','+(y-d)+' L'+(x+d)+','+(y+d)+' M'+(x+d)+','+(y-d)+' L'+(x-d)+','+(y+d)+'" style="stroke:'+c+';stroke-width:2.4;fill:none"/>';});
+  (opt.labels||[]).forEach(function(l){h+='<text x="'+(X(l.re)+(l.dx||8))+'" y="'+(Y(l.im)+(l.dy||-8))+'" text-anchor="'+(l.anchor||'start')+'" style="fill:var(--text);font-size:12px;paint-order:stroke;stroke:var(--canvas);stroke-width:3px">'+esc(l.t)+'</text>';});
+  svg.innerHTML=h;
+}
+function cstr(p,d){d=d||3; if(p.im===0)return fmt(p.re,d); var r=fmt(p.re,d),im=fmt(Math.abs(p.im),d); return (Math.abs(p.re)<1e-12?'':r+' ')+(p.im<0?'− ':(Math.abs(p.re)<1e-12?'':'+ '))+'j'+im;}
+
+/* ====================== 方框图 ====================== */
+function blockSVG(type){
+  var F={auto:['控制器','执行机构','被控对象'],computer:['计算机','D/A','执行机构','被控对象'],iot:['控制器','网络','D/A','执行机构','被控对象']}[type];
+  var B={auto:['传感器'],computer:['传感器','A/D'],iot:['传感器','A/D','网络']}[type];
+  var yF=62,yB=158,cx=64,r=12,x0=112,x1=668,n=F.length,w=n>=5?84:(n===4?96:108),gap=(x1-x0-n*w)/(n-1),h='';
+  function cls(lbl){return lbl==='网络'?'blk hl-net':(lbl==='A/D'||lbl==='D/A')?'blk hl-ad':'blk';}
+  h+='<text x="6" y="'+(yF-10)+'" class="lbl">y<tspan font-size="11" dy="4">d</tspan></text>';
+  h+='<line x1="6" y1="'+yF+'" x2="'+(cx-r)+'" y2="'+yF+'" class="ln" marker-end="url(#ah)"/>';
+  h+='<circle cx="'+cx+'" cy="'+yF+'" r="'+r+'" class="sum"/><text x="'+(cx-24)+'" y="'+(yF-8)+'" class="sg">+</text><text x="'+(cx-20)+'" y="'+(yF+32)+'" class="sg">−</text>';
+  h+='<line x1="'+(cx+r)+'" y1="'+yF+'" x2="'+x0+'" y2="'+yF+'" class="ln" marker-end="url(#ah)"/>';
+  if(type==='auto')h+='<text x="'+((cx+r+x0)/2)+'" y="'+(yF-8)+'" text-anchor="middle" class="lbl">e(t)</text>';
+  var plantX=0;
+  F.forEach(function(lbl,k){var x=x0+k*(w+gap); h+='<rect x="'+x+'" y="'+(yF-20)+'" width="'+w+'" height="40" rx="5" class="'+cls(lbl)+'"/><text x="'+(x+w/2)+'" y="'+(yF+5)+'" text-anchor="middle" class="bt">'+lbl+'</text>';
+    if(k<n-1){h+='<line x1="'+(x+w)+'" y1="'+yF+'" x2="'+(x+w+gap)+'" y2="'+yF+'" class="ln" marker-end="url(#ah)"/>'; if(type==='auto'&&k===0)h+='<text x="'+(x+w+gap/2)+'" y="'+(yF-8)+'" text-anchor="middle" class="lbl">u(t)</text>';}
+    if(k===n-1)plantX=x;});
+  var pm=plantX+w/2;
+  h+='<line x1="'+pm+'" y1="10" x2="'+pm+'" y2="'+(yF-20)+'" class="ln" marker-end="url(#ah)"/><text x="'+(pm+8)+'" y="22" class="lbl cn">扰动</text>';
+  var bx=718;
+  h+='<line x1="'+(plantX+w)+'" y1="'+yF+'" x2="754" y2="'+yF+'" class="ln" marker-end="url(#ah)"/><text x="'+(bx+6)+'" y="'+(yF-10)+'" class="lbl">y(t)</text><circle cx="'+bx+'" cy="'+yF+'" r="3" class="dotp"/>';
+  var fx=bx,bw=96;
+  h+='<line x1="'+bx+'" y1="'+yF+'" x2="'+bx+'" y2="'+yB+'" class="ln"/>';
+  var startX=bx; var gapB=type==='iot'?52:70;
+  B.forEach(function(lbl,k){var right=(k===0)?620:(prevLeft-gapB); var x=right-bw;
+    h+='<line x1="'+(k===0?bx:prevLeft)+'" y1="'+yB+'" x2="'+right+'" y2="'+yB+'" class="ln" marker-end="url(#ah)"/>';
+    h+='<rect x="'+x+'" y="'+(yB-20)+'" width="'+bw+'" height="40" rx="5" class="'+cls(lbl)+'"/><text x="'+(x+bw/2)+'" y="'+(yB+5)+'" text-anchor="middle" class="bt">'+lbl+'</text>';
+    prevLeft=x;});
+  var prevLeft;
+  h+='<polyline points="'+prevLeft+','+yB+' '+cx+','+yB+' '+cx+','+(yF+r)+'" class="ln" marker-end="url(#ah)"/>';
+  return '<svg viewBox="0 0 760 186" xmlns="'+SVGNS+'">'+h+'</svg>';
+}
+/* ====================== 目录 ====================== */
+function initToc(){
+  var btn=$('tocBtn'),toc=$('toc');
+  btn.addEventListener('click',function(){var o=toc.classList.toggle('open'); btn.setAttribute('aria-expanded',o?'true':'false'); btn.textContent=o?'关闭':'目录';});
+  toc.addEventListener('click',function(e){if(e.target.tagName==='A'&&toc.classList.contains('open')){toc.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.textContent='目录';}});
+  var links=[].slice.call(toc.querySelectorAll('a')),secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  var ticking=false;
+  function spy(){ticking=false; var y=window.innerHeight*0.25,cur=-1; secs.forEach(function(s,k){if(s&&s.getBoundingClientRect().top<y)cur=k;});
+    links.forEach(function(a,k){a.classList.toggle('active',k===cur);});}
+  window.addEventListener('scroll',function(){if(!ticking){ticking=true; requestAnimationFrame(spy);}},{passive:true}); spy();
+}
+
+/* ====================== 方框图切换 ====================== */
+var BD_NOTE={
+  auto:'<strong>自动控制系统</strong>：控制器、执行机构、被控对象、传感器构成负反馈闭环，信号都是连续的模拟量，<strong>没有 A/D 和 D/A</strong>。',
+  computer:'<strong>计算机控制系统</strong>：控制器换成数字计算机，于是需要 <strong>D/A</strong>（把数字控制量转换成模拟量送给执行机构）和 <strong>A/D</strong>（把传感器的模拟测量值转换成数字量）。图中橙色方块为新增环节。',
+  iot:'<strong>物联网控制系统</strong>：在计算机控制系统的基础上，在“控制器 → D/A”和“A/D → 比较点”之间插入<strong>网络</strong>，控制信号和测量信号都经网络传输。图中蓝色方块为网络。'
+};
+function initBD(){
+  $('bd-typical').innerHTML=blockSVG('auto');
+  $('bd-computer').innerHTML=blockSVG('computer');
+  var tabs=[].slice.call(document.querySelectorAll('[data-bd]'));
+  function show(t){tabs.forEach(function(b){b.setAttribute('aria-selected',b.dataset.bd===t?'true':'false');}); $('bd-switch').innerHTML=blockSVG(t); $('bd-note').innerHTML=BD_NOTE[t];
+    $('bd-switch').setAttribute('aria-label',{auto:'自动控制系统方框图',computer:'计算机控制系统方框图，新增 A/D 与 D/A',iot:'物联网控制系统方框图，新增网络环节'}[t]);}
+  tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.bd);});});
+  show('auto');
+}
+
+/* ====================== 二阶系统仿真 ====================== */
+function simSecond(xi,wn,tEnd,N){
+  var dt=tEnd/N,x=[0,0],t=[0],y=[0];
+  function f(tt,s){return [s[1],wn*wn*(1-s[0])-2*xi*wn*s[1]];}
+  for(var k=1;k<=N;k++){x=rk4(f,x,0,dt); t.push(k*dt); y.push(x[0]);}
+  return {t:t,y:y};
+}
+function initPerf(){
+  var xi=0.4,wn=4,eps=0.05,r=simSecond(xi,wn,3,1500),m=stepMetrics(r.t,r.y,1,eps);
+  plot($('perfPlot'),{series:[{x:r.t,y:r.y,color:cssv('--s1')}],xmin:0,xmax:3,ymin:0,ymax:1.4,xlabel:'t / s',
+    bands:[{y0:1-eps,y1:1+eps,color:cssv('--blue-soft')}],
+    hlines:[{y:1,ly:1+eps,label:'h(∞) = 1，±ε 误差带'},{y:0.9,dash:[2,4],label:'0.9 h(∞)',va:'below'}],
+    vlines:[{x:m.Tr,label:'Tr'},{x:m.Tm,label:'Tm'},{x:m.Ts,label:'Tε'}],
+    points:[{x:m.Tm,y:m.peak,color:cssv('--s2'),label:'h(Tm)，超调 Δh'}]});
+  $('perfMetrics').innerHTML=metricHTML([['上升时间 Tr',fmt(m.Tr,3)+' s'],['峰值时间 Tm',fmt(m.Tm,3)+' s'],['调节时间 Tε（±5%）',fmt(m.Ts,3)+' s'],['超调量 σ',fmt(m.os,1)+'%'],['稳态误差 e(∞)','0']]);
+}
+function metricHTML(list){return list.map(function(p){return '<div class="metric'+(p[2]?' '+p[2]:'')+'"><div class="k">'+p[0]+'</div><div class="v">'+p[1]+'</div></div>';}).join('');}
+function initSecond(){
+  var sx=$('soXi'),sw=$('soWn'),se=$('soEps');
+  function upd(){
+    var xi=+sx.value,wn=+sw.value,eps=+se.value; $('soXiV').textContent=xi.toFixed(2); $('soWnV').textContent=wn.toFixed(1);
+    var tEnd=24/wn,r=simSecond(xi,wn,tEnd,2400);
+    var stable=xi>0,m=stable?stepMetrics(r.t,r.y,1,eps):null;
+    var p,type;
+    if(xi>1){var d=wn*Math.sqrt(xi*xi-1); p=[C(-xi*wn+d),C(-xi*wn-d)]; type='过阻尼';}
+    else if(xi===1){p=[C(-wn),C(-wn)]; type='临界阻尼';}
+    else if(xi>0){var wd=wn*Math.sqrt(1-xi*xi); p=[C(-xi*wn,wd),C(-xi*wn,-wd)]; type='欠阻尼';}
+    else {p=[C(0,wn),C(0,-wn)]; type='无阻尼';}
+    var cfg={series:[{x:r.t,y:r.y,color:cssv('--s1')}],xmin:0,xmax:tEnd,ymin:0,ymax:Math.max(1.4,Math.ceil((Math.max.apply(null,r.y)+0.05)*10)/10),xlabel:'t / s',hlines:[{y:1}]};
+    if(stable){cfg.bands=[{y0:1-eps,y1:1+eps,color:cssv('--blue-soft')}]; if(m.Tm!==null)cfg.points=[{x:m.Tm,y:m.peak,color:cssv('--s2'),label:'峰值 '+fmt(m.peak,3)}];}
+    plot($('soPlot'),cfg);
+    splane($('soPlane'),p,[],{});
+    var osF=(xi>0&&xi<1)?Math.exp(-Math.PI*xi/Math.sqrt(1-xi*xi))*100:(xi===0?100:0);
+    var tmF=(xi>=0&&xi<1)?Math.PI/(wn*Math.sqrt(1-xi*xi)):null;
+    var epsTxt=(eps*100)+'%';
+    $('soMetrics').innerHTML=metricHTML([
+      ['极点 p₁, p₂',(p[0].im!==0?(Math.abs(p[0].re)<1e-12?'':fmt(p[0].re,2)+' ')+'± j'+fmt(Math.abs(p[0].im),2):fmt(p[0].re,2)+'，'+fmt(p[1].re,2)),'wide'],
+      ['超调量 σ（仿真）',stable?fmt(m.os,1)+'%':'—'],
+      ['超调量（公式）',(xi<1)?fmt(osF,1)+'%':'0%'],
+      ['峰值时间 Tm',stable&&m.Tm!==null?fmt(m.Tm,3)+' s':(tmF&&!stable?fmt(tmF,3)+' s':'—')],
+      ['上升时间 Tr',stable?fmt(m.Tr,3)+' s':'—'],
+      ['调节时间 Tε（±'+epsTxt+'）',stable?(m.Ts===null?'> '+fmt(tEnd,1)+' s':fmt(m.Ts,3)+' s'):'不收敛']
+    ]);
+    var v=$('soVerdict'),txt;
+    if(xi===0){v.className='verdict bad'; txt='ξ = 0，无阻尼：极点在虚轴上，不满足“实部 < 0”的稳定条件，响应为等幅振荡。';}
+    else if(xi<1){v.className='verdict mid'; txt='0 < ξ < 1，欠阻尼：一对共轭复极点，实部 −ξωn = '+fmt(-xi*wn,2)+' 决定衰减快慢，虚部 ωn√(1−ξ²) = '+fmt(wn*Math.sqrt(1-xi*xi),2)+' 决定振荡频率。系统稳定，有超调。';}
+    else if(xi===1){v.className='verdict ok'; txt='ξ = 1，临界阻尼：两个相等的负实极点，响应无超调。';}
+    else {v.className='verdict ok'; txt='ξ > 1，过阻尼：两个不相等的负实极点，响应单调、无超调，但 ξ 越大上升越慢。';}
+    v.textContent=txt;
+  }
+  [sx,sw].forEach(function(e){e.addEventListener('input',upd);}); se.addEventListener('change',upd); upd();
+}
+
+/* ====================== 拉氏变换表 ====================== */
+var LT=[
+ ['1','\\delta(t)','单位脉冲（冲激）','脉冲 冲激 delta impulse'],['\\frac{1}{s}','1(t)','单位阶跃','阶跃 step'],['\\frac{1}{s^2}','t','单位斜坡','斜坡 幂函数 ramp'],
+ ['\\frac{2!}{s^3}','t^2','幂函数','幂函数 抛物线'],['\\frac{3!}{s^4}','t^3','幂函数','幂函数'],['\\frac{m!}{s^{m+1}}','t^m','幂函数（一般式）','幂函数'],
+ ['\\frac{1}{s+a}','e^{-at}','指数','指数 exp'],['\\frac{1}{(s+a)^2}','te^{-at}','指数 × t','指数 重极点 exp'],['\\frac{1}{(s+a)^3}','\\frac{1}{2}t^2e^{-at}','指数 × t²','指数 重极点 exp'],
+ ['\\frac{1}{(s+a)^m}','\\frac{t^{m-1}e^{-at}}{(m-1)!}','指数（m 重极点）','指数 重极点 exp'],['\\frac{a}{s(s+a)}','1-e^{-at}','惯性环节阶跃响应','指数 阶跃响应 一阶 惯性'],
+ ['\\frac{a}{s^2(s+a)}','\\frac{1}{a}(at-1+e^{-at})','惯性环节斜坡响应','指数 斜坡响应 一阶'],['\\frac{b-a}{(s+a)(s+b)}','e^{-at}-e^{-bt}','双指数','指数 双极点'],
+ ['\\frac{s}{(s+a)^2}','(1-at)e^{-at}','指数（二重极点）','指数 重极点'],['\\frac{a^2}{s(s+a)^2}','1-e^{-at}(1+at)','二重极点阶跃响应（已勘误）','阶跃响应 重极点 勘误 指数'],
+ ['\\frac{(b-a)s}{(s+a)(s+b)}','be^{-bt}-ae^{-at}','双指数','指数 双极点'],['\\frac{a}{s^2+a^2}','\\sin at','正弦','正弦 sin'],['\\frac{s}{s^2+a^2}','\\cos at','余弦','余弦 cos'],
+ ['\\frac{s+a}{(s+a)^2+b^2}','e^{-at}\\cos bt','衰减余弦','衰减振荡 余弦 cos 指数'],['\\frac{b}{(s+a)^2+b^2}','e^{-at}\\sin bt','衰减正弦','衰减振荡 正弦 sin 指数'],
+ ['\\frac{a^2+b^2}{s\\left[(s+a)^2+b^2\\right]}','1-e^{-at}\\left(\\cos bt+\\frac{a}{b}\\sin bt\\right)','衰减振荡（欠阻尼阶跃响应）','欠阻尼 阶跃响应 衰减振荡 sin cos 指数']
+];
+function initLT(){
+  var tb=$('ltTable').querySelector('tbody');
+  tb.innerHTML=LT.map(function(r,k){return '<tr data-k="'+esc((r[0]+' '+r[1]+' '+r[2]+' '+r[3]).toLowerCase())+'"><td class="c">'+(k+1)+'</td><td><span class="m">'+tex(r[0])+'</span></td><td><span class="m">'+tex(r[1])+'</span></td><td class="small">'+r[2]+'</td></tr>';}).join('');
+  var inp=$('ltSearch');
+  function f(){var q=inp.value.trim().toLowerCase().replace(/\s+/g,''),n=0; [].forEach.call(tb.rows,function(tr){var key=tr.dataset.k.replace(/\s+/g,'').replace(/\\/g,''); var ok=!q||key.indexOf(q)>=0; tr.style.display=ok?'':'none'; if(ok)n++;}); $('ltCount').textContent=q?('匹配 '+n+' 项'):'共 21 项';}
+  inp.addEventListener('input',f); f();
+}
+
+/* ====================== 部分分式 ====================== */
+var PF_PRESETS=[
+ {n:'例 4-8：10(s+2)(s+5) / [s(s+1)(s+3)]',num:'10, 70, 100',poles:'0, -1, -3'},
+ {n:'课上练习：(s+2) / [s(s+1)]',num:'1, 2',poles:'0, -1'},
+ {n:'例 4-10：(s²+3) / [(s²+2s+5)(s+2)]',num:'1, 0, 3',poles:'-2, -1+2j, -1-2j'},
+ {n:'选做：3 / [(s²+2s+5)(s+2)]',num:'3',poles:'-2, -1+2j, -1-2j'},
+ {n:'例 1 阶跃响应：1 / [s(s+1)(s+2)]',num:'1',poles:'0, -1, -2'},
+ {n:'作业冲激响应：1 / [(s+2)(s+4)]',num:'1',poles:'-2, -4'},
+ {n:'作业阶跃响应：1 / [s(s+2)(s+4)]',num:'1',poles:'0, -2, -4'},
+ {n:'例 2 阶跃响应：2 / [s(s+1)(s+2)]',num:'2',poles:'0, -1, -2'},
+ {n:'自定义',num:'',poles:''}
+];
+function parseC(str){
+  var s=str.replace(/\s+/g,'').replace(/i/g,'j').replace(/−/g,'-'),m,N='((?:\\d+\\.?\\d*|\\.\\d+)?)';
+  if(!s)return null;
+  if(s.indexOf('j')<0){var v=Number(s); return isFinite(v)?C(v,0):null;}
+  var num='([+-]?(?:\\d+\\.?\\d*|\\.\\d+))';
+  var pats=[[new RegExp('^'+num+'([+-])'+N+'\\*?j$'),1],[new RegExp('^'+num+'([+-])j'+N+'$'),1],[new RegExp('^([+-]?)'+N+'\\*?j$'),0],[new RegExp('^([+-]?)j'+N+'$'),0]];
+  for(var k=0;k<pats.length;k++){m=s.match(pats[k][0]); if(m){
+    if(pats[k][1])return C(Number(m[1]),(m[2]==='-'?-1:1)*(m[3]===''?1:Number(m[3])));
+    return C(0,(m[1]==='-'?-1:1)*(m[2]===''?1:Number(m[2])));}}
+  return null;
+}
+function toFrac(x){for(var d=1;d<=60;d++){var n=Math.round(x*d); if(Math.abs(x*d-n)<1e-7*Math.max(1,Math.abs(x*d)))return {n:n,d:d};} return null;}
+function numTex(x){var f=toFrac(x); if(f&&f.d>1&&Math.abs(f.n)<10000)return (f.n<0?'-':'')+'\\frac{'+Math.abs(f.n)+'}{'+f.d+'}'; return fmt(x,4).replace('−','-');}
+function numTxt(x){var f=toFrac(x); var dec=fmt(x,4); if(f&&f.d>1&&Math.abs(f.n)<10000)return (f.n<0?'−':'')+Math.abs(f.n)+'/'+f.d+' ≈ '+fmt(x,4); return dec;}
+function initPF(){
+  var sel=$('pfPreset'); sel.innerHTML=PF_PRESETS.map(function(p,k){return '<option value="'+k+'">'+esc(p.n)+'</option>';}).join('');
+  function load(){var p=PF_PRESETS[+sel.value]; if(p.num){$('pfNum').value=p.num; $('pfPoles').value=p.poles; calc();}}
+  sel.addEventListener('change',load); $('pfGo').addEventListener('click',calc);
+  [$('pfNum'),$('pfPoles')].forEach(function(e){e.addEventListener('keydown',function(ev){if(ev.key==='Enter')calc();});});
+  load();
+}
+function polyTex(c){var t='',deg=c.length-1; c.forEach(function(a,k){if(Math.abs(a)<1e-12)return; var p=deg-k,abs=Math.abs(a),coef=(abs===1&&p>0)?'':fmt(abs,4); t+=(a<0?'-':(t?'+':''))+coef+(p>1?'s^{'+p+'}':(p===1?'s':''));}); return t||'0';}
+function calc(){
+  var out=$('pfOut'),num=$('pfNum').value.split(/[,，]/).map(function(s){return s.trim();}).filter(Boolean).map(Number);
+  var ptxt=$('pfPoles').value.split(/[,，]/).map(function(s){return s.trim();}).filter(Boolean);
+  var poles=ptxt.map(parseC);
+  function err(m){out.innerHTML='<p class="err-msg">'+m+'</p>'; plot($('pfPlot'),{series:[],xmin:0,xmax:1});}
+  if(!num.length||num.some(function(v){return !isFinite(v);}))return err('分子系数格式不正确，请输入用逗号分隔的数字，例如 10, 70, 100。');
+  if(!poles.length||poles.some(function(p){return !p;}))return err('极点格式不正确。实数写成 −3，复数写成 −1+2j。');
+  while(num.length>1&&num[0]===0)num.shift();
+  var n=poles.length;
+  if(num.length-1>=n)return err('要求分子次数低于分母次数（真分式）。当前分子 '+(num.length-1)+' 次，分母 '+n+' 次。');
+  for(var a=0;a<n;a++)for(var b=a+1;b<n;b++)if(cabs(csub(poles[a],poles[b]))<1e-9)return err('本计算器只处理互不相同的极点（课件中的情况 1、2）。');
+  for(a=0;a<n;a++){if(poles[a].im!==0){var ok=poles.some(function(q){return Math.abs(q.re-poles[a].re)<1e-9&&Math.abs(q.im+poles[a].im)<1e-9;}); if(!ok)return err('复数极点必须共轭成对出现，例如 −1+2j, −1−2j。');}}
+  var K=poles.map(function(p,i){var den=C(1,0); poles.forEach(function(q,j){if(j!==i)den=cmul(den,csub(p,q));}); return cdiv(polyEval(num,p),den);});
+  // 分母因式
+  var dTex='',used=[];
+  poles.forEach(function(p,i){if(used[i])return; if(p.im===0){dTex+=Math.abs(p.re)<1e-12?'s':'(s'+(p.re<0?'+':'-')+fmt(Math.abs(p.re),4)+')';} else {var j=poles.findIndex(function(q,jj){return jj!==i&&Math.abs(q.re-p.re)<1e-9&&Math.abs(q.im+p.im)<1e-9;}); used[j]=1; var b1=-2*p.re,c0=p.re*p.re+p.im*p.im; dTex+='('+polyTex([1,b1,c0])+')';} used[i]=1;});
+  var h='<span class="mb">'+tex('F(s)=\\frac{'+polyTex(num)+'}{'+dTex+'}')+'</span>';
+  h+='<div class="tablewrap"><table><thead><tr><th>极点 pᵢ</th><th>系数 Kᵢ = [(s − pᵢ)F(s)]<sub>s=pᵢ</sub></th></tr></thead><tbody>';
+  poles.forEach(function(p,i){var k=K[i]; h+='<tr><td>'+cstr(p,4)+'</td><td>'+(Math.abs(k.im)<1e-10?numTxt(k.re):('A + jB = '+fmt(k.re,4)+(k.im<0?' − j':' + j')+fmt(Math.abs(k.im),4)))+'</td></tr>';});
+  h+='</tbody></table></div>';
+  // f(t)
+  var terms=[];
+  function expTex(alpha){ if(Math.abs(alpha)<1e-12)return ''; var a=Math.abs(alpha),s=alpha>0?'-':''; return 'e^{'+s+(Math.abs(a-1)<1e-12?'':numTex(a))+'t}';}
+  function addTerm(c,body){ if(Math.abs(c)<1e-10)return; var ac=Math.abs(
