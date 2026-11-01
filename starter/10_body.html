@@ -1,0 +1,125 @@
+<body>
+<!-- ============ 移动端顶栏 + 目录（目录链接必须与各 section 的 id 一一对应） ============ -->
+<div class="mobilebar"><b>{{课程名}} · 学习手册</b><button id="tocBtn" aria-expanded="false" aria-controls="toc">目录</button></div>
+<div class="layout">
+<nav id="toc" aria-label="目录">
+  <p class="toc-title">目录</p>
+  <ol>
+    <li class="lvl1"><a href="#intro">课程导学</a></li>
+    <li class="lvl1"><a href="#c1">第1章 {{章名}}</a>
+      <ol class="lvl2">
+        <li><a href="#c1-1">1.1 {{小节名}}</a></li>
+        <li><a href="#c1-hw">本章重点与作业</a></li>
+      </ol></li>
+    <li class="lvl1"><a href="#quick">速查</a></li>
+    <li class="lvl1"><a href="#quiz">自测练习</a></li>
+  </ol>
+</nav>
+<main id="main">
+
+<!-- ============ 首屏：课程信息、覆盖范围、学习路径 ============ -->
+<header class="hero" id="top">
+  <p class="eyebrow">{{课程名}} · {{教师}} · {{单位}} · 课件学习整理</p>
+  <h1>{{课程名}}学习手册</h1>
+  <p class="lead">覆盖 {{章节范围}}。内容按课件顺序整理，配有例题详解、参考答案和交互演示。{{未覆盖范围，如“不含第 x 节”}}</p>
+  <ul class="chips" aria-label="本页包含"><li>{{N}} 章</li><li>{{N}} 道例题</li><li>{{N}} 个交互演示</li><li>自测练习</li></ul>
+  <div class="path">
+    <a href="#c1"><div class="n">第一步 · 第1章</div><div class="t">{{一句话目标}}</div><div class="d">{{本章主线}}</div></a>
+  </div>
+</header>
+
+<section class="sec" id="intro">
+  <h3>课程导学</h3>
+  <div class="grid2">
+    <div class="box"><div class="k">教材</div><p>{{课件给出的教材}}</p></div>
+    <div class="box"><div class="k">本页范围</div><p>{{已覆盖 / 未提供 / 课件声明不讲}}</p></div>
+  </div>
+</section>
+
+<!-- ============ 章 ============ -->
+<section class="chapter" id="c1">
+  <div class="chapter-head"><div class="num">CHAPTER 1</div><h2>第1章 {{章名}}</h2><p>{{本章一句话主线}}</p></div>
+
+  <!-- 节：保留课件编号与标题 -->
+  <section class="sec" id="c1-1">
+    <h3>1.1 {{小节名}} <span class="tag">{{可选：自学 / 重点}}</span></h3>
+    <blockquote><p><strong>{{术语}}</strong>：{{课件原定义，原样保留}}</p></blockquote>
+    <p>{{要点正文}}。行内公式 <span class="m">G(s)=\frac{Y(s)}{U(s)}</span>。</p>
+    <span class="mb">F(s)=\int_{0_-}^{\infty}f(t)e^{-st}dt</span>
+
+    <div class="callout key"><span class="label">关键理解（课件）</span><p>{{课件强调的结论}}</p></div>
+    <div class="callout add"><span class="label">补充说明</span><p>{{整理者补充，必须标注}}</p></div>
+    <div class="callout warn"><span class="label">易错点</span><p>{{常见误解}}</p></div>
+    <div class="callout err"><span class="label">课件勘误</span><p>{{原文：…；应为：…；依据：…}}</p></div>
+
+    <div class="tablewrap"><table>
+      <thead><tr><th>对比项</th><th>A</th><th>B</th></tr></thead>
+      <tbody><tr><td>定义</td><td>…</td><td>…</td></tr></tbody></table></div>
+
+    <ol class="steps"><li><b>第一步</b>：…</li><li><b>第二步</b>：…</li></ol>
+    <ul class="timeline"><li><span class="yr">1788</span> {{历史事件}}</li></ul>
+
+    <!-- 示意图：SVG + viewBox；颜色只用 CSS 变量/类；箭头用 marker-end="url(#ah)" -->
+    <div class="diagram narrow"><svg viewBox="0 0 420 90" role="img" aria-label="{{图的文字描述}}">
+      <text x="4" y="50" class="lbl">x</text><line x1="24" y1="45" x2="120" y2="45" class="ln" marker-end="url(#ah)"/>
+      <rect x="120" y="25" width="110" height="40" rx="5" class="blk"/><text x="175" y="50" text-anchor="middle" class="bt">环节</text>
+      <line x1="230" y1="45" x2="330" y2="45" class="ln" marker-end="url(#ah)"/><text x="338" y="50" class="lbl">y</text>
+    </svg></div>
+
+    <!-- 交互演示：控件 → 曲线 → 指标 → 结论；说明它是演示 -->
+    <div class="lab" id="lab-demo">
+      <div class="lab-head"><span class="badge">交互</span><b>{{演示标题}}</b><span class="hint">{{拖动什么、观察什么}}</span></div>
+      <div class="lab-body">
+        <div class="controls">
+          <div class="ctl"><label for="demoA">振幅 A <output id="demoAV"></output></label><input type="range" id="demoA" min="0.5" max="3" step="0.1" value="2"></div>
+          <div class="ctl"><label for="demoW">角频率 ω <output id="demoWV"></output></label><input type="range" id="demoW" min="0.5" max="6" step="0.1" value="2"></div>
+          <div class="ctl"><label for="demoZ">衰减系数 α <output id="demoZV"></output></label><input type="range" id="demoZ" min="0" max="1.5" step="0.01" value="0.3"></div>
+        </div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>y(t) = A e<sup>−αt</sup> cos ωt</span></div>
+        <div class="plotwrap"><canvas id="demoPlot" role="img" aria-label="{{曲线描述}}"></canvas></div>
+        <div class="metrics" id="demoMetrics"></div>
+        <p class="small muted">说明：演示用计算，参数为示意。</p>
+      </div>
+    </div>
+
+    <!-- 例题 / 作业 / 课堂提问：题目可见，解答折叠；右侧标注来源 -->
+    <details><summary>例 1-1：{{题目，保留课件编号}}<span class="src">例题 · 课件 P{{页}}</span></summary>
+      <div class="dbody"><p>{{完整步骤；每步可核验}}</p><span class="mb">y(t)=1-e^{-t}\quad(t\ge0)</span><p class="small muted">检验：{{初值/终值/代入验证}}</p></div></details>
+    <details><summary>课件提问：{{原问题}}<span class="src">参考思路为整理者补充</span></summary>
+      <div class="dbody"><p>{{参考思路}}</p></div></details>
+  </section>
+
+  <section class="sec" id="c1-hw">
+    <h3>本章重点与作业</h3>
+    <div class="callout warn"><span class="label">本章重点（课件）</span><ol><li>{{原样列出}}</li></ol></div>
+    <details><summary>作业 1：{{原题}}<span class="src">参考答案</span></summary><div class="dbody"><p>{{答案}}</p></div></details>
+  </section>
+</section>
+
+<!-- ============ 速查 ============ -->
+<section class="chapter" id="quick">
+  <div class="chapter-head"><div class="num">CHEAT SHEET</div><h2>速查</h2><p>考前过一遍最核心的内容。</p></div>
+  <div class="quick" style="margin-top:20px">
+    <div class="box"><div class="k">{{主题}}</div><span class="mb">{{核心公式}}</span><p class="small">{{一句话条件/适用范围}}</p></div>
+  </div>
+</section>
+
+<!-- ============ 自测（题目在 90_core.js.html 的 QUIZ 数组） ============ -->
+<section class="chapter" id="quiz">
+  <div class="chapter-head"><div class="num">SELF TEST</div><h2>自测练习</h2><p>单选题，点击选项立即判分并显示解析。</p></div>
+  <div class="btnrow" style="margin-top:16px"><button id="quizReset">重新作答</button></div>
+  <div class="quiz" id="quizList"></div>
+  <div class="score" id="quizScore" aria-live="polite"></div>
+</section>
+
+<footer>
+  <p><strong>关于本页</strong></p>
+  <ul>
+    <li>内容依据《{{课程名}}》课件 {{文件名/版本}}，按课件顺序整理各节要点。{{未覆盖范围}}</li>
+    <li>标注“补充”“参考答案”“整理者”的部分为整理时补充，不是课件原文；交互演示为示意计算。</li>
+    <li>{{勘误清单；没有则删除此条}}</li>
+  </ul>
+  <p><a href="#top">回到顶部 ↑</a></p>
+</footer>
+</main>
+</div>
