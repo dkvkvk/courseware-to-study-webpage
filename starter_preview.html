@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{课程名}} · 学习手册</title>
+<style>
+:root{
+  --text:#2C2C2B; --muted:#6F6C67; --canvas:#FFFFFF; --soft:#F9F8F7; --surface:#F0EFED; --border:#E6E5E3;
+  --blue:#2783DE; --blue-soft:#E5F2FC; --green:#46A171; --green-soft:#E8F1EC; --orange:#D5803B; --orange-soft:#FBEBDE; --red:#E56458; --red-soft:#FCE9E7;
+  --blue-text:#1F6FBF; --green-text:#2F7A52; --orange-text:#A65A1C; --red-text:#B8392E;
+  --s1:#5E9FE8; --s2:#DE9255; --s3:#72BC8F; --s4:#BF8EDA;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Segoe UI",Roboto,Arial,sans-serif;
+  --serif:"Times New Roman","Noto Serif CJK SC",Georgia,serif;
+  --mono:Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --text:#FFFFFF; --muted:rgba(255,255,255,.68); --canvas:#191919; --soft:#202020; --surface:#2A2A29; --border:rgba(255,255,255,.18);
+    --blue:#5E9FE8; --blue-soft:rgba(94,159,232,.14); --green:#72BC8F; --green-soft:rgba(114,188,143,.13); --orange:#DE9255; --orange-soft:rgba(222,146,85,.14); --red:#E97366; --red-soft:rgba(233,115,102,.14);
+    --blue-text:#8DBDF0; --green-text:#93D0AB; --orange-text:#EBB083; --red-text:#F2A198; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blue-text)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+.layout{display:flex;max-width:1180px;margin:0 auto;padding:0 32px;gap:48px}
+/* ---------- 目录 ---------- */
+#toc{position:sticky;top:0;align-self:flex-start;width:236px;flex:0 0 236px;max-height:100vh;overflow-y:auto;padding:28px 4px 40px 0;font-size:14px;line-height:1.5}
+#toc .toc-title{font-weight:600;font-size:13px;color:var(--muted);letter-spacing:.04em;margin:0 0 8px 10px}
+#toc ol{list-style:none;margin:0;padding:0}
+#toc li{margin:0}
+#toc a{display:block;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px}
+#toc a:hover{background:var(--soft);color:var(--text)}
+#toc a.active{background:var(--blue-soft);color:var(--blue-text);font-weight:600}
+#toc .lvl1>a{color:var(--text);font-weight:600;margin-top:10px}
+#toc .lvl2 a{padding-left:22px;font-size:13.5px}
+.mobilebar{display:none}
+main{flex:1;min-width:0;max-width:820px;padding:28px 0 96px}
+/* ---------- 头部 ---------- */
+.hero{padding:40px 0 28px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.06em;margin:0 0 10px}
+h1{font-size:36px;line-height:1.25;margin:0 0 12px;font-weight:700;letter-spacing:.01em}
+.hero p.lead{font-size:17px;color:var(--muted);margin:0 0 20px;max-width:680px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chips li{font-size:13px;background:var(--soft);border:1px solid var(--border);border-radius:999px;padding:3px 12px;color:var(--muted)}
+.path{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0 0}
+.path a{display:block;text-decoration:none;color:inherit;border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--canvas)}
+.path a:hover{background:var(--soft)}
+.path .n{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.05em}
+.path .t{font-weight:600;font-size:16px;margin:2px 0 4px}
+.path .d{font-size:14px;color:var(--muted);line-height:1.5}
+/* ---------- 正文 ---------- */
+section.chapter{padding-top:40px}
+.chapter-head{border-top:3px solid var(--text);padding-top:16px;margin-bottom:8px}
+.chapter-head .num{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.08em}
+h2{font-size:28px;line-height:1.3;margin:4px 0 8px}
+.chapter-head p{color:var(--muted);margin:0}
+section.sec{padding-top:36px}
+h3{font-size:22px;line-height:1.35;margin:0 0 12px}
+h3 .tag{font-size:12px;font-weight:600;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--surface);color:var(--muted)}
+h4{font-size:17px;margin:28px 0 8px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 12px;padding-left:1.4em}
+li{margin:3px 0}
+strong{font-weight:650}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+hr.sep{border:0;border-top:1px solid var(--border);margin:32px 0}
+blockquote{margin:12px 0 16px;padding:12px 16px;border-left:3px solid var(--blue);background:var(--soft);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+.callout{border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:16px 0;background:var(--soft)}
+.callout .label{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.04em;margin-bottom:4px}
+.callout p:last-child,.callout ul:last-child,.callout ol:last-child{margin-bottom:0}
+.callout.key{background:var(--blue-soft);border-color:transparent}.callout.key .label{color:var(--blue-text)}
+.callout.warn{background:var(--orange-soft);border-color:transparent}.callout.warn .label{color:var(--orange-text)}
+.callout.add{background:var(--green-soft);border-color:transparent}.callout.add .label{color:var(--green-text)}
+.callout.err{background:var(--red-soft);border-color:transparent}.callout.err .label{color:var(--red-text)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0 16px}
+.box{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--canvas)}
+.box h5{margin:0 0 6px;font-size:15.5px}
+.box p,.box ul{font-size:15px;margin-bottom:6px}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.box .k{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.05em}
+.tablewrap{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.55}
+th,td{padding:9px 12px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--border)}
+td:first-child,th:first-child{white-space:nowrap}
+td,th{min-width:6em}td.c,th.c,td:first-child,th:first-child{min-width:0}
+tr:last-child td{border-bottom:0}
+th{background:var(--soft);font-weight:600;font-size:14px;white-space:nowrap}
+td.c,th.c{text-align:center}
+.steps{counter-reset:st;list-style:none;padding:0;margin:12px 0 16px}
+.steps>li{counter-increment:st;position:relative;padding:0 0 10px 40px;margin:0}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--surface);color:var(--text);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.timeline{list-style:none;padding:0;margin:12px 0 16px;border-left:2px solid var(--border)}
+.timeline li{position:relative;padding:0 0 14px 20px;margin:0}
+.timeline li::before{content:"";position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--canvas);border:2px solid var(--blue)}
+.timeline .yr{font-weight:700;margin-right:6px}
+.layers{display:flex;flex-direction:column;gap:6px;margin:12px 0 16px}
+.layer{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;border:1px solid var(--border);border-radius:8px;padding:10px 14px;background:var(--canvas)}
+.layer b{font-size:15px}
+.layer span{font-size:14.5px;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:12px 0 16px}
+.flow .fs{flex:1 1 120px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--canvas);font-size:14px;line-height:1.45}
+.flow .fs b{display:block;font-size:14.5px;margin-bottom:2px}
+.flow .fs code{font-size:12.5px}
+.flow .ar{align-self:center;color:var(--muted);font-size:14px}
+code{font-family:var(--mono);font-size:.9em;background:var(--surface);padding:1px 5px;border-radius:4px}
+/* ---------- 公式 ---------- */
+.m{font-family:var(--serif);font-size:1.08em;white-space:nowrap}
+.mb{display:block;font-family:var(--serif);font-size:1.12em;text-align:center;margin:12px 0 16px;padding:10px 8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;line-height:2.1}
+.mb.left{text-align:left}
+.m i,.mb i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.25;margin:0 .12em}
+.frac>.fn{border-bottom:1px solid currentColor;padding:0 .2em .05em}
+.frac>.fd{padding:.05em .2em 0}
+.frac .frac{font-size:.92em}
+.m sup,.mb sup,.m sub,.mb sub{font-size:.68em;line-height:0}
+.ss{display:inline-flex;flex-direction:column;vertical-align:middle;line-height:1;font-size:.68em}
+.ss sup,.ss sub{font-size:1em;line-height:1.1}
+.lim{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .1em}
+.lim-sup,.lim-sub{font-size:.62em;white-space:nowrap}
+.bigop{font-size:1.45em;line-height:1}
+.int{font-size:1.5em;vertical-align:-.12em;margin-right:.08em}
+.sqrt{white-space:nowrap}.sqrt .radicand{border-top:1px solid currentColor;padding:.18em .12em 0;margin-left:.02em}
+.rel{margin:0 .3em}.bo{margin:0 .2em}
+sup .bo,sub .bo,.lim-sub .bo,.lim-sup .bo,sup .rel,sub .rel,.lim-sub .rel{margin:0 .06em}
+.tx{font-family:var(--sans);font-style:normal;font-size:.9em}
+.fnm{font-style:normal;margin-right:.18em}
+.dl{font-size:1.25em}
+/* ---------- 交互组件 ---------- */
+.lab{border:1px solid var(--border);border-radius:12px;margin:20px 0 24px;background:var(--canvas);overflow:hidden}
+.lab-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--soft);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.lab-head .badge{font-size:12px;font-weight:700;color:var(--blue-text);background:var(--blue-soft);border-radius:999px;padding:1px 9px}
+.lab-head b{font-size:15.5px}
+.lab-head .hint{font-size:13.5px;color:var(--muted);flex-basis:100%}
+.lab-body{padding:16px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 20px;margin-bottom:12px}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:2px}
+.ctl label output{color:var(--text);font-weight:600;font-family:var(--mono);font-size:13.5px}
+input[type=range]{width:100%;accent-color:var(--blue);height:28px;margin:0}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+button,.btn{font:inherit;font-size:14px;border:1px solid var(--border);background:var(--canvas);color:var(--text);border-radius:8px;padding:7px 14px;min-height:40px;cursor:pointer}
+button:hover{background:var(--soft)}
+button[aria-pressed=true],button[aria-selected=true]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue-text);font-weight:600}
+select,input[type=text],input[type=number],input[type=search]{font:inherit;font-size:15px;color:var(--text);background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:7px 10px;min-height:40px;width:100%}
+.field{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;margin-bottom:12px}
+.plotwrap{position:relative;height:260px;margin:4px 0 8px}
+.plotwrap.sm{height:200px}
+.plotwrap canvas{width:100%;height:100%;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13.5px;color:var(--muted);margin:4px 0 2px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)!important;height:2px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0 4px}
+.metric{background:var(--soft);border-radius:8px;padding:8px 12px}
+.metric.wide{grid-column:span 2}.metric.wide .v{white-space:nowrap}
+@media (max-width:560px){.metric.wide{grid-column:1/-1}}
+.metric .k{font-size:12.5px;color:var(--muted)}
+.metric .v{font-size:16px;font-weight:650;font-family:var(--mono)}
+.verdict{font-size:14.5px;padding:8px 12px;border-radius:8px;margin:8px 0 0}
+.verdict.ok{background:var(--green-soft);color:var(--green-text)}
+.verdict.bad{background:var(--red-soft);color:var(--red-text)}
+.verdict.mid{background:var(--orange-soft);color:var(--orange-text)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:16px;align-items:start}.split>*{min-width:0}
+.splane{width:100%;max-width:280px;display:block;margin:0 auto}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.diagram{overflow-x:auto;margin:8px 0 12px}
+.diagram svg{display:block;min-width:620px;width:100%;height:auto}
+.diagram.narrow svg{min-width:420px;max-width:560px;margin:0 auto;display:block}
+svg text{font-family:var(--sans)}
+.out{font-size:15px}
+.out .mb{margin:8px 0}
+.err-msg{color:var(--red-text);font-size:14px}
+/* ---------- 例题 / 折叠 ---------- */
+details{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:var(--canvas)}
+details>summary{cursor:pointer;padding:11px 16px;font-weight:600;font-size:15.5px;list-style:none;display:flex;gap:10px;align-items:baseline}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";display:inline-block;width:0;height:0;border-left:6px solid var(--muted);border-top:5px solid transparent;border-bottom:5px solid transparent;margin-right:2px;transition:transform .15s;flex:none;align-self:center}
+details[open]>summary::before{transform:rotate(90deg)}
+details>summary .src{margin-left:auto;font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+details .dbody{padding:0 16px 14px;border-top:1px solid var(--border);padding-top:12px;overflow-x:auto}
+details .dbody p:last-child{margin-bottom:0}
+.q{font-weight:500}
+/* ---------- 自测 ---------- */
+.quiz{counter-reset:qq}
+.qcard{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;counter-increment:qq}
+.qcard .qt::before{content:counter(qq) ". ";font-weight:700}
+.qcard .qt{font-weight:550;margin-bottom:8px}
+.opts{display:grid;gap:6px}
+.opts button{text-align:left;width:100%;justify-content:flex-start}
+.opts button.right{background:var(--green-soft);border-color:var(--green);color:var(--green-text);font-weight:600}
+.opts button.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red-text)}
+.qfb{font-size:14.5px;margin-top:8px;display:none}
+.qfb.show{display:block}
+.score{position:sticky;bottom:12px;display:inline-block;background:var(--text);color:var(--canvas);font-size:14px;border-radius:999px;padding:6px 14px;margin-top:8px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.quick .box .mb{font-size:1.02em;margin:6px 0;padding:4px 0}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--border);font-size:14px;color:var(--muted)}
+footer ul{padding-left:1.2em}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+/* ---------- 响应式 ---------- */
+@media (max-width:1023px){
+  .layout{display:block;padding:0 20px}
+  #toc{display:none;position:fixed;inset:56px 0 0 0;width:auto;max-height:none;background:var(--canvas);z-index:20;padding:12px 20px 40px;border-top:1px solid var(--border)}
+  #toc.open{display:block}
+  .mobilebar{display:flex;position:sticky;top:0;z-index:21;background:var(--canvas);border-bottom:1px solid var(--border);height:56px;align-items:center;justify-content:space-between;padding:0 20px}
+  .mobilebar b{font-size:15px}
+  main{max-width:none;padding-top:8px}
+  html{scroll-padding-top:68px}
+}
+@media (max-width:640px){
+  h1{font-size:28px}
+  h2{font-size:24px}
+  h3{font-size:20px}
+  .path,.grid2,.grid3,.quick{grid-template-columns:minmax(0,1fr)}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .diagram::after{content:"← 左右滑动查看完整图 →";display:block;text-align:center;font-size:12px;color:var(--muted);margin-top:4px}
+  .layer{grid-template-columns:1fr;gap:2px}
+  .layout{padding:0 16px}
+  .lab-body{padding:14px 12px}
+  .mb{font-size:.98em;padding:8px 2px}
+  table{font-size:14px}
+}
+.acc{position:relative;display:inline-block}.acc .am{position:absolute;top:-.36em;left:58%;transform:translateX(-50%);font-style:normal;letter-spacing:.01em;line-height:1;font-size:1.05em;font-weight:700}
+#ltTable td:last-child{white-space:nowrap;font-size:13px}
+table.wide{min-width:700px}
+</style>
+</head>
+<body>
+<!-- ============ 移动端顶栏 + 目录（目录链接必须与各 section 的 id 一一对应） ============ -->
+<div class="mobilebar"><b>{{课程名}} · 学习手册</b><button id="tocBtn" aria-expanded="false" aria-controls="toc">目录</button></div>
+<div class="layout">
+<nav id="toc" aria-label="目录">
+  <p class="toc-title">目录</p>
+  <ol>
+    <li class="lvl1"><a href="#intro">课程导学</a></li>
+    <li class="lvl1"><a href="#c1">第1章 {{章名}}</a>
+      <ol class="lvl2">
+        <li><a href="#c1-1">1.1 {{小节名}}</a></li>
+        <li><a href="#c1-hw">本章重点与作业</a></li>
+      </ol></li>
+    <li class="lvl1"><a href="#quick">速查</a></li>
+    <li class="lvl1"><a href="#quiz">自测练习</a></li>
+  </ol>
+</nav>
+<main id="main">
+
+<!-- ============ 首屏：课程信息、覆盖范围、学习路径 ============ -->
+<header class="hero" id="top">
+  <p class="eyebrow">{{课程名}} · {{教师}} · {{单位}} · 课件学习整理</p>
+  <h1>{{课程名}}学习手册</h1>
+  <p class="lead">覆盖 {{章节范围}}。内容按课件顺序整理，配有例题详解、参考答案和交互演示。{{未覆盖范围，如“不含第 x 节”}}</p>
+  <ul class="chips" aria-label="本页包含"><li>{{N}} 章</li><li>{{N}} 道例题</li><li>{{N}} 个交互演示</li><li>自测练习</li></ul>
+  <div class="path">
+    <a href="#c1"><div class="n">第一步 · 第1章</div><div class="t">{{一句话目标}}</div><div class="d">{{本章主线}}</div></a>
+  </div>
+</header>
+
+<section class="sec" id="intro">
+  <h3>课程导学</h3>
+  <div class="grid2">
+    <div class="box"><div class="k">教材</div><p>{{课件给出的教材}}</p></div>
+    <div class="box"><div class="k">本页范围</div><p>{{已覆盖 / 未提供 / 课件声明不讲}}</p></div>
+  </div>
+</section>
+
+<!-- ============ 章 ============ -->
+<section class="chapter" id="c1">
+  <div class="chapter-head"><div class="num">CHAPTER 1</div><h2>第1章 {{章名}}</h2><p>{{本章一句话主线}}</p></div>
+
+  <!-- 节：保留课件编号与标题 -->
+  <section class="sec" id="c1-1">
+    <h3>1.1 {{小节名}} <span class="tag">{{可选：自学 / 重点}}</span></h3>
+    <blockquote><p><strong>{{术语}}</strong>：{{课件原定义，原样保留}}</p></blockquote>
+    <p>{{要点正文}}。行内公式 <span class="m">G(s)=\frac{Y(s)}{U(s)}</span>。</p>
+    <span class="mb">F(s)=\int_{0_-}^{\infty}f(t)e^{-st}dt</span>
+
+    <div class="callout key"><span class="label">关键理解（课件）</span><p>{{课件强调的结论}}</p></div>
+    <div class="callout add"><span class="label">补充说明</span><p>{{整理者补充，必须标注}}</p></div>
+    <div class="callout warn"><span class="label">易错点</span><p>{{常见误解}}</p></div>
+    <div class="callout err"><span class="label">课件勘误</span><p>{{原文：…；应为：…；依据：…}}</p></div>
+
+    <div class="tablewrap"><table>
+      <thead><tr><th>对比项</th><th>A</th><th>B</th></tr></thead>
+      <tbody><tr><td>定义</td><td>…</td><td>…</td></tr></tbody></table></div>
+
+    <ol class="steps"><li><b>第一步</b>：…</li><li><b>第二步</b>：…</li></ol>
+    <ul class="timeline"><li><span class="yr">1788</span> {{历史事件}}</li></ul>
+
+    <!-- 示意图：SVG + viewBox；颜色只用 CSS 变量/类；箭头用 marker-end="url(#ah)" -->
+    <div class="diagram narrow"><svg viewBox="0 0 420 90" role="img" aria-label="{{图的文字描述}}">
+      <text x="4" y="50" class="lbl">x</text><line x1="24" y1="45" x2="120" y2="45" class="ln" marker-end="url(#ah)"/>
+      <rect x="120" y="25" width="110" height="40" rx="5" class="blk"/><text x="175" y="50" text-anchor="middle" class="bt">环节</text>
+      <line x1="230" y1="45" x2="330" y2="45" class="ln" marker-end="url(#ah)"/><text x="338" y="50" class="lbl">y</text>
+    </svg></div>
+
+    <!-- 交互演示：控件 → 曲线 → 指标 → 结论；说明它是演示 -->
+    <div class="lab" id="lab-demo">
+      <div class="lab-head"><span class="badge">交互</span><b>{{演示标题}}</b><span class="hint">{{拖动什么、观察什么}}</span></div>
+      <div class="lab-body">
+        <div class="controls">
+          <div class="ctl"><label for="demoA">振幅 A <output id="demoAV"></output></label><input type="range" id="demoA" min="0.5" max="3" step="0.1" value="2"></div>
+          <div class="ctl"><label for="demoW">角频率 ω <output id="demoWV"></output></label><input type="range" id="demoW" min="0.5" max="6" step="0.1" value="2"></div>
+          <div class="ctl"><label for="demoZ">衰减系数 α <output id="demoZV"></output></label><input type="range" id="demoZ" min="0" max="1.5" step="0.01" value="0.3"></div>
+        </div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>y(t) = A e<sup>−αt</sup> cos ωt</span></div>
+        <div class="plotwrap"><canvas id="demoPlot" role="img" aria-label="{{曲线描述}}"></canvas></div>
+        <div class="metrics" id="demoMetrics"></div>
+        <p class="small muted">说明：演示用计算，参数为示意。</p>
+      </div>
+    </div>
+
+    <!-- 例题 / 作业 / 课堂提问：题目可见，解答折叠；右侧标注来源 -->
+    <details><summary>例 1-1：{{题目，保留课件编号}}<span class="src">例题 · 课件 P{{页}}</span></summary>
+      <div class="dbody"><p>{{完整步骤；每步可核验}}</p><span class="mb">y(t)=1-e^{-t}\quad(t\ge0)</span><p class="small muted">检验：{{初值/终值/代入验证}}</p></div></details>
+    <details><summary>课件提问：{{原问题}}<span class="src">参考思路为整理者补充</span></summary>
+      <div class="dbody"><p>{{参考思路}}</p></div></details>
+  </section>
+
+  <section class="sec" id="c1-hw">
+    <h3>本章重点与作业</h3>
+    <div class="callout warn"><span class="label">本章重点（课件）</span><ol><li>{{原样列出}}</li></ol></div>
+    <details><summary>作业 1：{{原题}}<span class="src">参考答案</span></summary><div class="dbody"><p>{{答案}}</p></div></details>
+  </section>
+</section>
+
+<!-- ============ 速查 ============ -->
+<section class="chapter" id="quick">
+  <div class="chapter-head"><div class="num">CHEAT SHEET</div><h2>速查</h2><p>考前过一遍最核心的内容。</p></div>
+  <div class="quick" style="margin-top:20px">
+    <div class="box"><div class="k">{{主题}}</div><span class="mb">{{核心公式}}</span><p class="small">{{一句话条件/适用范围}}</p></div>
+  </div>
+</section>
+
+<!-- ============ 自测（题目在 90_core.js.html 的 QUIZ 数组） ============ -->
+<section class="chapter" id="quiz">
+  <div class="chapter-head"><div class="num">SELF TEST</div><h2>自测练习</h2><p>单选题，点击选项立即判分并显示解析。</p></div>
+  <div class="btnrow" style="margin-top:16px"><button id="quizReset">重新作答</button></div>
+  <div class="quiz" id="quizList"></div>
+  <div class="score" id="quizScore" aria-live="polite"></div>
+</section>
+
+<footer>
+  <p><strong>关于本页</strong></p>
+  <ul>
+    <li>内容依据《{{课程名}}》课件 {{文件名/版本}}，按课件顺序整理各节要点。{{未覆盖范围}}</li>
+    <li>标注“补充”“参考答案”“整理者”的部分为整理时补充，不是课件原文；交互演示为示意计算。</li>
+    <li>{{勘误清单；没有则删除此条}}</li>
+  </ul>
+  <p><a href="#top">回到顶部 ↑</a></p>
+</footer>
+</main>
+</div>
+<!-- 全局箭头 marker（SVG 里用 marker-end="url(#ah)"）与 SVG 图元样式 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs></svg>
+<style>
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.blk{fill:var(--soft);stroke:var(--muted);stroke-width:1.3}
+.blk.hl-net{fill:var(--blue-soft);stroke:var(--blue)}
+.blk.hl-ad{fill:var(--orange-soft);stroke:var(--orange)}
+.sum{fill:var(--canvas);stroke:var(--muted);stroke-width:1.4}
+.dotp{fill:var(--muted)}
+.bt{fill:var(--text);font-size:14px}
+.lbl{fill:var(--text);font-size:14px;font-style:italic;font-family:var(--serif)}
+.lbl.cn{font-style:normal;font-family:var(--sans);font-size:13px;fill:var(--muted)}
+.sg{fill:var(--text);font-size:15px;font-weight:600}
+</style>
+<script>
+(function(){
+'use strict';
+/* ====================== 公式渲染（轻量 TeX 子集） ====================== */
+var SYM={alpha:'α',beta:'β',gamma:'γ',delta:'δ',Delta:'Δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',xi:'ξ',omega:'ω',Omega:'Ω',sigma:'σ',pi:'π',phi:'φ',varphi:'φ',Phi:'Φ',tau:'τ',lambda:'λ',mu:'μ',infty:'∞',partial:'∂',cdots:'⋯',ldots:'…',prime:'′'};
+var OPS={cdot:'·',times:'×',pm:'±',mp:'∓'};
+var RELS={le:'≤',ge:'≥',leq:'≤',geq:'≥',ne:'≠',approx:'≈',to:'→',rightarrow:'→',Rightarrow:'⇒',Leftrightarrow:'⇔',leftrightarrow:'↔',lt:'<',gt:'>',equiv:'≡'};
+var SPACES={',':'\u2009',';':'\u2005',' ':'\u00a0',quad:'\u2003',qquad:'\u2003\u2003','!':''};
+var FN=['sin','cos','tan','ln','log','exp','arccos','arcsin','arctan','max','min'];
+var DOTS={dot:'·',ddot:'··',dddot:'···'};
+var ACC={dot:'\u0307',ddot:'\u0308',dddot:'\u20db',bar:'\u0305',hat:'\u0302'};
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function tex(src){
+  var i=0,s=src;
+  function ws(){while(i<s.length&&/\s/.test(s[i]))i++;}
+  function seq(close){
+    var out='';
+    while(i<s.length){
+      ws(); if(i>=s.length)break;
+      if(s[i]==='}'){ if(close)i++; return out; }
+      if((s[i]==='-'||s[i]==='+')&&(out===''||/(rel">[^<]*<\/span>|[(\[,]|bo">[^<]*<\/span>|dl">[(\[]<\/span>)$/.test(out))){
+        out+='<span class="un">'+(s[i]==='-'?'−':'+')+'</span>'; i++; continue; }
+      out+=item();
+    }
+    return out;
+  }
+  function rawGroup(){ws(); if(s[i]!=='{')return s[i++]||''; i++; var d=1,st=i; while(i<s.length){if(s[i]==='{')d++; else if(s[i]==='}'){d--; if(!d)break;} i++;} var r=s.slice(st,i); i++; return r;}
+  function arg(){ws(); if(s[i]==='{'){i++; return seq(true);} return base().h;}
+  function item(){
+    var b=base(),sup=null,sub=null;
+    for(;;){ws(); if(s[i]==='^'){i++; sup=arg();} else if(s[i]==='_'){i++; sub=arg();} else break;}
+    if(b.lim&&(sup!==null||sub!==null)) return '<span class="lim">'+(sup!==null?'<span class="lim-sup">'+sup+'</span>':'')+'<span>'+b.h+'</span>'+(sub!==null?'<span class="lim-sub">'+sub+'</span>':'')+'</span>';
+    if(sup!==null&&sub!==null) return b.h+'<span class="ss"><sup>'+sup+'</sup><sub>'+sub+'</sub></span>';
+    return b.h+(sup!==null?'<sup>'+sup+'</sup>':'')+(sub!==null?'<sub>'+sub+'</sub>':'');
+  }
+  function base(){
+    ws(); var c=s[i];
+    if(c===undefined) return {h:''};
+    if(c==='{'){i++; return {h:seq(true)};}
+    if(c==='\\'){
+      i++; var n='';
+      if(/[A-Za-z]/.test(s[i]||'')){while(i<s.length&&/[A-Za-z]/.test(s[i]))n+=s[i++];} else n=s[i++];
+      if(n==='frac'){var a=arg(),b=arg(); return {h:'<span class="frac"><span class="fn">'+a+'</span><span class="fd">'+b+'</span></span>'};}
+      if(n==='sqrt'){return {h:'<span class="sqrt">√<span class="radicand">'+arg()+'</span></span>'};}
+      if(n==='text'||n==='mathrm'){return {h:'<span class="tx">'+esc(rawGroup())+'</span>'};}
+      if(ACC[n]){var x=arg(); if(DOTS[n]) return {h:'<span class="acc"><span class="am">'+DOTS[n]+'</span>'+x+'</span>'}; if(n==='bar') return {h:'<span style="text-decoration:overline">'+x+'</span>'}; var m=x.match(/^<i>(.)<\/i>$/); return {h:m?'<i>'+m[1]+ACC[n]+'</i>':x+ACC[n]};}
+      if(n==='left'||n==='right'){var d=s[i++]; if(d==='.')return {h:''}; if(d==='\\')d=s[i++]; return {h:'<span class="dl">'+esc(d)+'</span>'};}
+      if(n==='sum')return {h:'<span class="bigop">∑</span>',lim:true};
+      if(n==='prod')return {h:'<span class="bigop">∏</span>',lim:true};
+      if(n==='lim')return {h:'<span class="fnm">lim</span>',lim:true};
+      if(n==='int')return {h:'<span class="int">∫</span>'};
+      if(FN.indexOf(n)>=0)return {h:'<span class="fnm">'+n+'</span>'};
+      if(n in SPACES)return {h:SPACES[n]};
+      if(SYM[n])return {h:SYM[n]};
+      if(OPS[n])return {h:'<span class="bo">'+OPS[n]+'</span>'};
+      if(RELS[n])return {h:'<span class="rel">'+esc(RELS[n])+'</span>'};
+      if(n==='{'||n==='}'||n==='%'||n==='|')return {h:n};
+      return {h:esc('\\'+n)};
+    }
+    i++;
+    if(/[A-Za-z]/.test(c))return {h:'<i>'+c+'</i>'};
+    if(c==='-')return {h:'<span class="bo">−</span>'};
+    if(c==='+')return {h:'<span class="bo">+</span>'};
+    if(c==='=')return {h:'<span class="rel">=</span>'};
+    if(c==="'")return {h:'′'};
+    if(c==='<'||c==='>')return {h:'<span class="rel">'+esc(c)+'</span>'};
+    return {h:esc(c)};
+  }
+  return seq(false);
+}
+function renderMath(root){
+  (root||document).querySelectorAll('.m,.mb').forEach(function(el){
+    if(el.dataset.done)return; var src=el.textContent; el.dataset.done='1';
+    el.setAttribute('aria-label',src.replace(/\\/g,' ')); el.innerHTML=tex(src);
+  });
+}
+window.__tex=tex;
+
+/* ====================== 通用工具 ====================== */
+function $(id){return document.getElementById(id);}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function fmt(x,d){ if(x===null||x===undefined||!isFinite(x))return '—'; d=(d===undefined)?3:d; var v=Math.abs(x)<Math.pow(10,-d)/2?0:x; return v.toFixed(d).replace(/\.?0+$/,'').replace('-','−'); }
+function fmtFixed(x,d){ if(!isFinite(x))return '—'; var v=Math.abs(x)<Math.pow(10,-d)/2?0:x; return v.toFixed(d).replace('-','−'); }
+/* 复数 */
+function C(re,im){return {re:re,im:im||0};}
+function cadd(a,b){return C(a.re+b.re,a.im+b.im);} function csub(a,b){return C(a.re-b.re,a.im-b.im);}
+function cmul(a,b){return C(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re);}
+function cdiv(a,b){var d=b.re*b.re+b.im*b.im; return C((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d);}
+function cabs(a){return Math.hypot(a.re,a.im);}
+function cexp(a){var e=Math.exp(a.re); return C(e*Math.cos(a.im),e*Math.sin(a.im));}
+function polyEval(coef,z){var r=C(0,0); for(var k=0;k<coef.length;k++){r=cadd(cmul(r,z),C(coef[k],0));} return r;}
+/* 首一多项式求根：[1,a1,...,an] */
+function roots(c){
+  var n=c.length-1;
+  if(n<1)return [];
+  if(n===1)return [C(-c[1],0)];
+  if(n===2){var b=c[1],q=c[2],D=b*b-4*q; if(D>=0){var sq=Math.sqrt(D); return [C((-b+sq)/2),C((-b-sq)/2)];} var si=Math.sqrt(-D); return [C(-b/2,si/2),C(-b/2,-si/2)];}
+  var R=1; for(var k=1;k<=n;k++)R=Math.max(R,Math.pow(Math.abs(c[k]),1/k)); R*=1.2;
+  var z=[]; for(k=0;k<n;k++){var ang=2*Math.PI*k/n+0.7; z.push(C(R*Math.cos(ang),R*Math.sin(ang)));}
+  for(var it=0;it<800;it++){
+    var maxd=0;
+    for(k=0;k<n;k++){var num=polyEval(c,z[k]),den=C(1,0); for(var j=0;j<n;j++)if(j!==k)den=cmul(den,csub(z[k],z[j])); var dz=cdiv(num,den); z[k]=csub(z[k],dz); maxd=Math.max(maxd,cabs(dz));}
+    if(maxd<1e-13)break;
+  }
+  z.forEach(function(p){if(Math.abs(p.im)<1e-7*Math.max(1,Math.abs(p.re)))p.im=0;});
+  return z;
+}
+/* 四阶龙格-库塔 */
+function rk4(f,x,t,h){
+  var k1=f(t,x),n=x.length,a=new Array(n),b=new Array(n),c=new Array(n),i;
+  for(i=0;i<n;i++)a[i]=x[i]+h/2*k1[i]; var k2=f(t+h/2,a);
+  for(i=0;i<n;i++)b[i]=x[i]+h/2*k2[i]; var k3=f(t+h/2,b);
+  for(i=0;i<n;i++)c[i]=x[i]+h*k3[i]; var k4=f(t+h,c);
+  var o=new Array(n); for(i=0;i<n;i++)o[i]=x[i]+h/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]); return o;
+}
+/* ====================== 画布绘图 ====================== */
+var CANVASES=[];
+function nice(min,max,count){
+  if(!(max>min))max=min+1;
+  var span=max-min,step=Math.pow(10,Math.floor(Math.log10(span/count))),err=span/count/step;
+  if(err>=7.5)step*=10; else if(err>=3.5)step*=5; else if(err>=1.5)step*=2;
+  var lo=Math.floor(min/step+1e-9)*step,hi=Math.ceil(max/step-1e-9)*step,ticks=[];
+  for(var v=lo;v<=hi+step*1e-6;v+=step)ticks.push(Math.abs(v)<step*1e-9?0:v);
+  return {lo:lo,hi:hi,step:step,ticks:ticks};
+}
+function tickLabel(v,step){var d=Math.max(0,-Math.floor(Math.log10(step)+1e-9)); return v.toFixed(Math.min(d,3)).replace('-','−');}
+function plot(cv,cfg){
+  cv._cfg=cfg;
+  if(!cv._reg){cv._reg=1; CANVASES.push(cv); if(window.ResizeObserver){var ro=new ResizeObserver(function(){draw(cv);}); ro.observe(cv);}}
+  draw(cv);
+}
+function draw(cv){
+  var cfg=cv._cfg; if(!cfg)return;
+  var W=cv.clientWidth,H=cv.clientHeight; if(!W||!H)return;
+  var dpr=window.devicePixelRatio||1; cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  var g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  var col={text:cssv('--text'),muted:cssv('--muted'),border:cssv('--border')};
+  var font=cssv('--sans')||'sans-serif';
+  var xmin=cfg.xmin,xmax=cfg.xmax,ymin=cfg.ymin,ymax=cfg.ymax;
+  if(ymin==null||ymax==null){
+    var lo=Infinity,hi=-Infinity;
+    cfg.series.forEach(function(s){for(var k=0;k<s.y.length;k++){var v=s.y[k]; if(isFinite(v)){if(v<lo)lo=v; if(v>hi)hi=v;}}});
+    (cfg.hlines||[]).forEach(function(h){lo=Math.min(lo,h.y);hi=Math.max(hi,h.y);});
+    if(!isFinite(lo)){lo=0;hi=1;}
+    if(cfg.zero!==false){lo=Math.min(lo,0);hi=Math.max(hi,0);}
+    var pd=(hi-lo)*0.06||0.5;
+    if(ymin==null)ymin=lo<0?lo-pd:lo; if(ymax==null)ymax=hi+pd;
+  }
+  var yt=nice(ymin,ymax,H<230?4:5);
+  if(cfg.ymin==null)ymin=yt.lo; if(cfg.ymax==null)ymax=yt.hi;
+  var xt=nice(xmin,xmax,W<440?4:7);
+  g.font='12px '+font;
+  var lw=0; yt.ticks.forEach(function(v){if(v>=ymin-1e-9&&v<=ymax+1e-9)lw=Math.max(lw,g.measureText(tickLabel(v,yt.step)).width);});
+  var pad={l:Math.ceil(lw)+10,r:10,t:10,b:cfg.xlabel?38:24};
+  var PW=W-pad.l-pad.r,PH=H-pad.t-pad.b;
+  function X(x){return pad.l+(x-xmin)/(xmax-xmin)*PW;}
+  function Y(y){return pad.t+(1-(y-ymin)/(ymax-ymin))*PH;}
+  (cfg.bands||[]).forEach(function(b){g.fillStyle=b.color; var y1=Y(Math.min(ymax,b.y1)),y0=Y(Math.max(ymin,b.y0)); g.fillRect(pad.l,y1,PW,y0-y1);});
+  g.lineWidth=1; g.strokeStyle=col.border; g.fillStyle=col.muted; g.textAlign='right'; g.textBaseline='middle';
+  yt.ticks.forEach(function(v){if(v<ymin-1e-9||v>ymax+1e-9)return; var y=Math.round(Y(v))+0.5; g.beginPath(); g.moveTo(pad.l,y); g.lineTo(pad.l+PW,y); g.stroke(); g.fillText(tickLabel(v,yt.step),pad.l-6,y);});
+  g.textAlign='center'; g.textBaseline='top';
+  xt.ticks.forEach(function(v){if(v<xmin-1e-9||v>xmax+1e-9)return; g.fillText(tickLabel(v,xt.step),Math.min(Math.max(X(v),pad.l+8),W-12),pad.t+PH+6);});
+  g.strokeStyle=col.muted; g.beginPath(); var y0=Math.round(Y(Math.max(ymin,Math.min(ymax,0))))+0.5; g.moveTo(pad.l,y0); g.lineTo(pad.l+PW,y0); g.stroke();
+  g.beginPath(); g.moveTo(pad.l+0.5,pad.t); g.lineTo(pad.l+0.5,pad.t+PH); g.stroke();
+  if(cfg.xlabel){g.textAlign='right'; g.textBaseline='top'; g.fillStyle=col.muted; g.fillText(cfg.xlabel,pad.l+PW,pad.t+PH+21);}
+  g.save(); g.beginPath(); g.rect(pad.l,pad.t-2,PW,PH+4); g.clip();
+  (cfg.hlines||[]).forEach(function(h){g.strokeStyle=h.color||col.muted; g.setLineDash(h.dash||[5,4]); g.lineWidth=1.2; g.beginPath(); g.moveTo(pad.l,Y(h.y)); g.lineTo(pad.l+PW,Y(h.y)); g.stroke();});
+  (cfg.vlines||[]).forEach(function(v){g.strokeStyle=v.color||col.muted; g.setLineDash([3,3]); g.lineWidth=1; g.beginPath(); g.moveTo(X(v.x),pad.t); g.lineTo(X(v.x),pad.t+PH); g.stroke();});
+  g.setLineDash([]);
+  var span=ymax-ymin;
+  cfg.series.forEach(function(s){
+    if(s.dash)g.setLineDash(s.dash); else g.setLineDash([]);
+    g.strokeStyle=s.color; g.lineWidth=s.width||2; g.lineJoin='round'; g.beginPath(); var pen=false,py=0;
+    for(var k=0;k<s.x.length;k++){var v=s.y[k]; if(!isFinite(v)){pen=false;continue;} var yy=Y(Math.max(ymin-span,Math.min(ymax+span,v))),xx=X(s.x[k]);
+      if(!pen){g.moveTo(xx,yy);pen=true;} else {if(s.stairs)g.lineTo(xx,py); g.lineTo(xx,yy);} py=yy;}
+    g.stroke();
+  });
+  g.setLineDash([]);
+  g.restore();
+  g.font='12px '+font;
+  (cfg.vlines||[]).forEach(function(v){if(!v.label)return; g.fillStyle=col.text; g.textAlign='center'; g.textBaseline='bottom'; var x=Math.min(Math.max(X(v.x),pad.l+12),pad.l+PW-12); g.fillText(v.label,x,pad.t+PH-3);});
+  (cfg.hlines||[]).forEach(function(h){if(!h.label)return; g.fillStyle=col.muted; var L=h.pos==='left'; g.textAlign=L?'left':'right'; var below=h.va==='below'; g.textBaseline=below?'top':'bottom'; g.fillText(h.label,L?pad.l+6:pad.l+PW-4,Y(h.ly!=null?h.ly:h.y)+(below?3:-3));});
+  (cfg.points||[]).forEach(function(p){g.fillStyle=p.color; g.beginPath(); g.arc(X(p.x),Y(p.y),4,0,7); g.fill(); if(p.label){g.fillStyle=col.text; g.textAlign='left'; g.textBaseline='bottom'; var tx=X(p.x)+7; if(tx+g.measureText(p.label).width>pad.l+PW){g.textAlign='right'; tx=X(p.x)-7;} g.fillText(p.label,tx,Y(p.y)-3);}});
+}
+function redrawAll(){CANVASES.forEach(draw);}
+
+/* ====================== 目录 ====================== */
+function initToc(){
+  var btn=$('tocBtn'),toc=$('toc');
+  btn.addEventListener('click',function(){var o=toc.classList.toggle('open'); btn.setAttribute('aria-expanded',o?'true':'false'); btn.textContent=o?'关闭':'目录';});
+  toc.addEventListener('click',function(e){if(e.target.tagName==='A'&&toc.classList.contains('open')){toc.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.textContent='目录';}});
+  var links=[].slice.call(toc.querySelectorAll('a')),secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  var ticking=false;
+  function spy(){ticking=false; var y=window.innerHeight*0.25,cur=-1; secs.forEach(function(s,k){if(s&&s.getBoundingClientRect().top<y)cur=k;});
+    links.forEach(function(a,k){a.classList.toggle('active',k===cur);});}
+  window.addEventListener('scroll',function(){if(!ticking){ticking=true; requestAnimationFrame(spy);}},{passive:true}); spy();
+}
+
+/* ====================== 自测题 ====================== */
+function qx(t){return esc(t).replace(/([A-Za-z])_([A-Za-z0-9]+)/g,'$1<sub>$2</sub>');}
+/* 题目格式：[题干, [A,B,C,D], 正确选项下标(0起), 解析]。题干/选项中 K_D 会渲染成下标。 */
+var QUIZ=[
+ ['示例：课件中“稳定”的判据是：',['全部零点实部小于零','全部极点实部小于零','至少一个极点在左半平面','极点在虚轴上'],1,'解析写清依据，并注明对应课件页或小节。'],
+ ['示例：第二题（替换为本课程题目）：',['选项一','选项二','选项三','选项四'],0,'每题都要能在页面正文找到依据。']
+];
+function initQuiz(){
+  var box=$('quizList'),ans={},LET='ABCD';
+  function score(){var n=0,c=0; for(var k in ans){n++; if(ans[k])c++;} $('quizScore').textContent='已答 '+n+' / '+QUIZ.length+' · 正确 '+c;}
+  function build(){
+    ans={};
+    box.innerHTML=QUIZ.map(function(q,k){return '<div class="qcard" data-q="'+k+'"><div class="qt">'+qx(q[0])+'</div><div class="opts">'+q[1].map(function(o,j){return '<button data-o="'+j+'">'+LET[j]+'. '+qx(o)+'</button>';}).join('')+'</div><div class="qfb" aria-live="polite"></div></div>';}).join('');
+    score();
+  }
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-o]'); if(!b)return; var card=b.closest('.qcard'),k=+card.dataset.q; if(k in ans)return;
+    var q=QUIZ[k],j=+b.dataset.o,ok=j===q[2]; ans[k]=ok;
+    [].forEach.call(card.querySelectorAll('button'),function(x,jj){x.disabled=true; if(jj===q[2])x.classList.add('right'); else if(jj===j)x.classList.add('wrong');});
+    var fb=card.querySelector('.qfb'); fb.innerHTML=(ok?'<strong style="color:var(--green-text)">✓ 正确。</strong>':'<strong style="color:var(--red-text)">✗ 错误，正确答案是 '+LET[q[2]]+'。</strong>')+qx(q[3]); fb.classList.add('show'); score();
+  });
+  $('quizReset').addEventListener('click',build);
+  build();
+}
+
+/* ====================== 示例交互：参数 → 曲线（按课程替换） ====================== */
+/* 交互实验模式：读取控件 → 计算（解析式或 rk4 数值积分）→ plot() 画图 → 输出指标与结论。 */
+function initDemo(){
+  var A=$('demoA'),W=$('demoW'),Z=$('demoZ'); if(!A)return;
+  function upd(){
+    var a=+A.value,w=+W.value,z=+Z.value; $('demoAV').textContent=a.toFixed(1); $('demoWV').textContent=w.toFixed(1); $('demoZV').textContent=z.toFixed(2);
+    var T=[],Y=[],N=600,tEnd=10; for(var k=0;k<=N;k++){var t=k*tEnd/N; T.push(t); Y.push(a*Math.exp(-z*t)*Math.cos(w*t));}
+    plot($('demoPlot'),{series:[{x:T,y:Y,color:cssv('--s1')}],xmin:0,xmax:tEnd,ymin:-3,ymax:3,xlabel:'t / s',hlines:[{y:0}]});
+    $('demoMetrics').innerHTML=[['振幅 A',fmt(a,1)],['角频率 ω',fmt(w,1)+' rad/s'],['衰减系数 α',fmt(z,2)]].map(function(p){return '<div class="metric"><div class="k">'+p[0]+'</div><div class="v">'+p[1]+'</div></div>';}).join('');
+  }
+  [A,W,Z].forEach(function(e){e.addEventListener('input',upd);}); upd();
+}
+
+/* ====================== 启动 ====================== */
+function safe(fn,name){try{fn();}catch(err){if(window.console)console.error('['+name+']',err);}}
+function init(){
+  safe(renderMath,'math'); safe(initToc,'toc'); safe(initDemo,'demo'); safe(initQuiz,'quiz');
+  /* 深色/浅色切换时重绘所有画布与依赖 CSS 颜色的 SVG */
+  if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)'); var h=function(){safe(initDemo,'demo');};
+    if(mq.addEventListener)mq.addEventListener('change',h); else if(mq.addListener)mq.addListener(h);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+</body>
+</html>
