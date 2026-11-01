@@ -1,0 +1,298 @@
+ss="sum"/><text x="50" y="100" class="sg">−</text>
+    <line x1="80" y1="70" x2="140" y2="70" class="ln"/><text x="96" y="62" class="lbl">e(t)</text><circle cx="140" cy="70" r="3" class="dotp"/>
+    <polyline points="140,70 140,24 180,24" class="ln" marker-end="url(#ah)"/><line x1="140" y1="70" x2="180" y2="70" class="ln" marker-end="url(#ah)"/><polyline points="140,70 140,116 180,116" class="ln" marker-end="url(#ah)"/>
+    <rect x="180" y="8" width="96" height="32" rx="4" class="blk"/><text x="228" y="29" text-anchor="middle" class="bt">比例 Kp</text>
+    <rect x="180" y="54" width="96" height="32" rx="4" class="blk"/><text x="228" y="75" text-anchor="middle" class="bt">积分 KI/s</text>
+    <rect x="180" y="100" width="96" height="32" rx="4" class="blk"/><text x="228" y="121" text-anchor="middle" class="bt">微分 KD·s</text>
+    <polyline points="276,24 342,24 342,58" class="ln" marker-end="url(#ah)"/><line x1="276" y1="70" x2="330" y2="70" class="ln" marker-end="url(#ah)"/><polyline points="276,116 342,116 342,82" class="ln" marker-end="url(#ah)"/>
+    <circle cx="342" cy="70" r="12" class="sum"/>
+    <line x1="354" y1="70" x2="420" y2="70" class="ln" marker-end="url(#ah)"/><text x="372" y="62" class="lbl">u(t)</text>
+    <rect x="420" y="52" width="100" height="36" rx="4" class="blk"/><text x="470" y="75" text-anchor="middle" class="bt">被控对象</text>
+    <line x1="520" y1="70" x2="634" y2="70" class="ln" marker-end="url(#ah)"/><text x="590" y="62" class="lbl">y(t)</text>
+    <circle cx="570" cy="70" r="3" class="dotp"/><polyline points="570,70 570,158 68,158 68,82" class="ln" marker-end="url(#ah)"/>
+  </svg></div>
+
+  <section class="sec" id="c5-1">
+    <h3>5.1.1 基本 PID 控制算法</h3>
+    <p>常用的组合有 P、PI、PD、PID。<strong>I 和 D 很少单独使用</strong>，一般要和 P 配合。</p>
+    <div class="tablewrap"><table class="wide">
+      <thead><tr><th>控制器</th><th>时域</th><th>传递函数 Gc(s)</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><strong>P</strong><br>比例</td><td><span class="m">u=K_pe</span></td><td><span class="m">K_p</span><br><span class="small muted">Kp 为比例系数</span></td><td>增大 Kp：上升加快，超调增大（振荡加剧）；能<strong>改善稳态性能</strong>（减小稳态误差），但<strong>降低稳定性</strong></td></tr>
+        <tr><td><strong>PI</strong><br>比例积分</td><td><span class="m">u=K_p\left[e+\frac{1}{T_I}\int e\,dt\right]</span></td><td><span class="m">K_p\left(1+\frac{1}{T_Is}\right)=K_p+\frac{K_I}{s}</span><br><span class="small muted">KI 为积分系数</span></td><td>积分作用<strong>改善稳态性能</strong>（可消除稳态误差），但<strong>降低稳定性</strong></td></tr>
+        <tr><td><strong>PD</strong><br>比例微分</td><td><span class="m">u=K_p\left[e+T_D\frac{de}{dt}\right]</span></td><td><span class="m">K_p(1+T_Ds)=K_p+K_Ds</span><br><span class="small muted">KD 为微分系数</span></td><td>微分反映误差的<strong>变化趋势</strong>，有“预见性”，<strong>改善动态性能</strong>；缺点是会<strong>放大噪声</strong></td></tr>
+        <tr><td><strong>PID</strong></td><td colspan="2">见下方公式 (5.10)</td><td>积分改善稳态性能，比例、微分改善动态性能</td></tr>
+      </tbody></table></div>
+    <span class="mb">u(t)=K_p\left[e(t)+\frac{1}{T_I}\int_0^te(t)dt+T_D\frac{de(t)}{dt}\right]=K_pe(t)+K_I\int_0^te(t)dt+K_D\frac{de(t)}{dt}</span>
+    <span class="mb">G_c(s)=\frac{U(s)}{E(s)}=K_p+\frac{K_I}{s}+K_Ds\qquad(5.10)</span>
+    <p>其中 <span class="m">T_I</span> 为积分时间常数，<span class="m">T_D</span> 为微分时间常数，<span class="m">K_I=\frac{K_p}{T_I}</span>，<span class="m">K_D=K_pT_D</span>。</p>
+
+    <div class="lab" id="lab-pid">
+      <div class="lab-head"><span class="badge">交互</span><b>PID 控制仿真实验</b><span class="hint">单位负反馈，单位阶跃给定。调节 Kp、KI、KD，观察输出 y(t) 与控制量 u(t)；可以用预设按钮按“试凑法”一步步来。</span></div>
+      <div class="lab-body">
+        <div class="fields"><label class="field" for="pidPlant"><span>被控对象 G(s)</span><select id="pidPlant">
+          <option value="1,3,2">1 / (s² + 3s + 2)　（例 1 的对象）</option>
+          <option value="1,5,5">1 / (s² + 5s + 5)　（小测验的对象）</option>
+          <option value="2,3,0">2 / (s² + 3s)　（例 2 的对象，含积分环节）</option>
+        </select></label></div>
+        <div class="controls">
+          <div class="ctl"><label for="pidKp">比例系数 Kp <output id="pidKpV"></output></label><input type="range" id="pidKp" min="0" max="50" step="0.5" value="1"></div>
+          <div class="ctl"><label for="pidKi">积分系数 KI <output id="pidKiV"></output></label><input type="range" id="pidKi" min="0" max="50" step="0.5" value="0"></div>
+          <div class="ctl"><label for="pidKd">微分系数 KD <output id="pidKdV"></output></label><input type="range" id="pidKd" min="0" max="10" step="0.1" value="0"></div>
+        </div>
+        <div class="btnrow" aria-label="试凑法预设">
+          <button data-pid="1,0,0">① 只用 P：Kp = 1</button>
+          <button data-pid="20,0,0">① 加大 Kp = 20</button>
+          <button data-pid="15,15,0">② 加积分：Kp = 15, KI = 15</button>
+          <button data-pid="15,15,2.5">③ 加微分：KD = 2.5</button>
+          <button data-pid="2,30,0">反例：积分过强</button>
+        </div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>输出 y(t)</span><span><i class="dash" style="color:var(--muted)"></i>给定值 r = 1</span></div>
+        <div class="plotwrap"><canvas id="pidPlot" role="img" aria-label="PID 闭环阶跃响应 y(t)"></canvas></div>
+        <div class="legend"><span><i style="background:var(--s2)"></i>控制量 u(t)</span></div>
+        <div class="plotwrap sm"><canvas id="pidU" role="img" aria-label="控制量 u(t)"></canvas></div>
+        <div class="metrics" id="pidMetrics"></div>
+        <div class="split" style="margin-top:8px">
+          <div class="out" id="pidPoles"></div>
+          <figure style="margin:0"><svg class="splane" id="pidPlane" viewBox="0 0 280 230" role="img" aria-label="闭环极点位置"></svg><figcaption class="small muted" style="text-align:center">闭环极点（×）</figcaption></figure>
+        </div>
+        <p class="small muted">说明：仿真为整理者编写的演示。用 4 阶龙格-库塔法数值积分；微分项按 t &gt; 0 计算，即忽略阶跃瞬间的冲激；稳态误差由终值定理求出；上升时间按首次达到 0.9h(∞) 计算，调节时间按 ±2% 误差带计算。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="c5-2">
+    <h3>数字 PID：位置式与增量式</h3>
+    <p>在计算机控制系统中，校正环节由<strong>算法（程序）</strong>实现，把连续 PID 离散化就得到数字 PID。一台计算机可以控制几十到几百个回路，其中大部分回路用 PID 控制就能满足要求。</p>
+    <p>计算机只能根据<strong>采样时刻</strong>的偏差计算控制量，积分和微分只能用数值方法近似。设采样周期为 <span class="m">T</span>，用矩形法求积分、后向差分求微分：</p>
+    <span class="mb">t\approx kT,\qquad\int_0^te(t)dt\approx T\sum_{m=0}^{k}e(m),\qquad\frac{de(t)}{dt}\approx\frac{e(k)-e(k-1)}{T}</span>
+    <h4>位置式 PID（式 5.11）</h4>
+    <span class="mb">u(k)=K_p\left\{e(k)+\frac{T}{T_I}\sum_{m=0}^{k}e(m)+\frac{T_D}{T}\left[e(k)-e(k-1)\right]\right\}=K_pe(k)+K_I'\sum_{m=0}^{k}e(m)+K_D'\left[e(k)-e(k-1)\right]</span>
+    <p>其中 <span class="m">K_I'=\frac{K_pT}{T_I}</span> 为积分系数，<span class="m">K_D'=\frac{K_pT_D}{T}</span> 为微分系数。</p>
+    <ul>
+      <li>它直接给出执行机构应到达的<strong>位置</strong>，所以叫位置式，也叫点位型。</li>
+      <li><strong>缺点</strong>：每次输出都与过去的全部状态有关，要对 <span class="m">e(m)</span> 累加，计算量大，而且容易产生较大的累积误差。</li>
+    </ul>
+    <h4>增量式 PID（速度型，式 5.12）</h4>
+    <p>由位置式写出 <span class="m">u(k-1)</span>，两式相减：</p>
+    <span class="mb">u(k-1)=K_pe(k-1)+K_I'\sum_{m=0}^{k-1}e(m)+K_D'\left[e(k-1)-e(k-2)\right]</span>
+    <span class="mb">\Delta u(k)=u(k)-u(k-1)=K_p\left[e(k)-e(k-1)\right]+K_I'e(k)+K_D'\left[e(k)-2e(k-1)+e(k-2)\right]</span>
+    <p>按 <span class="m">e(k),e(k-1),e(k-2)</span> 合并同类项：</p>
+    <span class="mb">\Delta u(k)=d_0e(k)+d_1e(k-1)+d_2e(k-2),\qquad u(k)=u(k-1)+\Delta u(k)</span>
+    <span class="mb">d_0=K_p+K_I'+K_D',\qquad d_1=-(K_p+2K_D'),\qquad d_2=K_D'</span>
+    <div class="callout add"><span class="label">补充说明</span><p>d₀、d₁、d₂ 的展开式由整理者推导，课件只写到 d₀e(k) + d₁e(k−1) + d₂e(k−2)。增量式只需保存最近三次偏差，不用累加全部历史，这正好克服了位置式的缺点。</p></div>
+
+    <div class="lab" id="lab-inc">
+      <div class="lab-head"><span class="badge">交互</span><b>增量式 PID 逐步计算器</b><span class="hint">输入 PID 参数和一串偏差 e(k)，逐拍计算 Δu(k) 和 u(k)，并与位置式结果对照（初值 e(−1) = e(−2) = 0，u(−1) = 0）。</span></div>
+      <div class="lab-body">
+        <div class="fields">
+          <label class="field" for="incKp"><span>Kp</span><input type="number" id="incKp" value="2" step="0.1"></label>
+          <label class="field" for="incTi"><span>T<sub>I</sub>（s）</span><input type="number" id="incTi" value="1" step="0.1" min="0.001"></label>
+          <label class="field" for="incTd"><span>T<sub>D</sub>（s）</span><input type="number" id="incTd" value="0.1" step="0.01" min="0"></label>
+          <label class="field" for="incT"><span>采样周期 T（s）</span><input type="number" id="incT" value="0.1" step="0.01" min="0.001"></label>
+        </div>
+        <label class="field" for="incE"><span>偏差序列 e(0), e(1), …（逗号分隔）</span><input type="text" id="incE" value="1, 0.8, 0.5, 0.3, 0.1, 0"></label>
+        <div class="out" id="incCoef" style="margin-top:12px"></div>
+        <div class="tablewrap"><table id="incTable"><thead><tr><th class="c">k</th><th>e(k)</th><th>Δu(k)</th><th>u(k) 增量式</th><th>u(k) 位置式</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="c5-3">
+    <h3>5.1.2 改进的 PID 控制算法</h3>
+    <div class="grid2">
+      <div class="box"><h5>1. 积分分离 PID</h5>
+        <p><strong>思想</strong>：动态过程中不积分，接近稳态时才积分。</p>
+        <p><strong>原因</strong>：加入积分校正后会产生过大的超调量，这对某些生产过程是绝对不允许的。积分分离既保持了积分作用，又减小了超调量。</p>
+        <span class="mb">u(k)=K_pe(k)+K_lK_i\sum_{j=0}^{k}e(j)+K_d\left[e(k)-e(k-1)\right]</span>
+        <p><span class="m">K_l=1</span>（当 <span class="m">|e(k)|\le E_0</span>）；<span class="m">K_l=0</span>（当 <span class="m">|e(k)|\gt E_0</span>）。<span class="m">K_l</span> 称为<strong>逻辑系数</strong>。</p></div>
+      <div class="box"><h5>2. 不完全微分 PID</h5>
+        <p><strong>原因</strong>：对有高频扰动的过程，标准 PID 的微分作用响应过于灵敏，容易引起振荡，降低调节品质。</p>
+        <p><strong>做法</strong>：在 PID 输出端<strong>串联一阶惯性环节</strong>（低通滤波器），见图 5.3：E(s) → PID → U′(s) → D<sub>f</sub>(s) → U(s)。</p>
+        <span class="mb">D_f(s)=\frac{1}{T_fs+1}</span></div>
+      <div class="box"><h5>3. 微分先行 PID</h5>
+        <p><strong>原因</strong>：避免给定值升降给系统带来冲击，例如超调量过大、调节阀动作剧烈。</p>
+        <p><strong>做法</strong>：<strong>只对被控量 y(t) 微分</strong>，不对偏差 e(t) 微分，也就是对给定值 r(t) 没有微分作用（图 5.5）。前向通道为 <span class="m">K_p\left(1+\frac{1}{T_Is}\right)</span>，反馈通道为 <span class="m">\frac{1+T_Ds}{1+0.1\gamma T_Ds}</span>，<span class="m">\gamma</span> 为微分增益系数。</p>
+        <p><strong>适用</strong>：给定值频繁升降的系统。</p></div>
+      <div class="box"><h5>4. 带死区的 PID</h5>
+        <p><strong>适用</strong>：要求控制作用尽量少变动的场合。</p>
+        <p><strong>做法</strong>（图 5.6）：r(k) → e(k) → 死区（±e₀） → e′(k) → PID → u(k) → 阀 → G(s) → y(k)。偏差在死区内时 e′(k) = 0，控制量不变。</p>
+        <p>带死区的 PID 实际上是<strong>非线性</strong>控制系统。</p></div>
+    </div>
+
+    <div class="lab" id="lab-imp">
+      <div class="lab-head"><span class="badge">交互</span><b>改进 PID 效果对比</b><span class="hint">同一被控对象 1/(s² + 3s + 2) 和同一组基本参数下，对比“标准数字 PID”与“改进算法”。参数为演示设定。</span></div>
+      <div class="lab-body">
+        <div class="tabs" role="tablist" aria-label="选择改进算法">
+          <button role="tab" aria-selected="true" data-imp="sep">积分分离</button>
+          <button role="tab" aria-selected="false" data-imp="filt">不完全微分</button>
+          <button role="tab" aria-selected="false" data-imp="dfirst">微分先行</button>
+          <button role="tab" aria-selected="false" data-imp="dead">带死区</button>
+        </div>
+        <p class="out" id="impDesc"></p>
+        <div class="controls" id="impCtl"></div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>标准 PID</span><span><i style="background:var(--s2)"></i>改进 PID</span><span><i class="dash" style="color:var(--muted)"></i>给定值 r(t)</span></div>
+        <div class="plotwrap"><canvas id="impY" role="img" aria-label="被控量 y(t) 对比"></canvas></div>
+        <p class="small muted" style="margin:0">控制量 u(k)</p>
+        <div class="plotwrap sm"><canvas id="impU" role="img" aria-label="控制量 u(k) 对比"></canvas></div>
+        <div class="tablewrap"><table id="impTable"><thead><tr><th>指标</th><th>标准 PID</th><th>改进 PID</th></tr></thead><tbody></tbody></table></div>
+        <p class="small muted">说明：离散位置式 PID 加零阶保持，对象用龙格-库塔法积分。“不完全微分”和“带死区”两个场景在测量值上叠加了 ±0.01 的伪随机噪声（固定种子，可复现）。“微分先行”按“只对 y 做差分”的思想实现，没有包含图 5.5 中的滤波分母。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="c5-4">
+    <h3>5.2 数字 PID 控制器的工程实现</h3>
+    <p>数字 PID 控制器本质上就是一段<strong>程序</strong>。一台模拟调节器只能控制一个回路，而这段 PID 程序可以作为所有回路的<strong>公共子程序</strong>反复调用，各回路之间只是原始数据和输入输出通道不同。为此，每个回路都要分配一段<strong>内存数据区</strong>（线性表），并配一个回路操作显示器。</p>
+    <h4>六个组成部分（图 5.7）</h4>
+    <div class="flow" role="list">
+      <div class="fs" role="listitem"><b>① 给定值处理</b><code>SV → CSV</code></div><div class="ar" aria-hidden="true">→</div>
+      <div class="fs" role="listitem"><b>② 被控量处理</b><code>PV → CPV</code></div><div class="ar" aria-hidden="true">→</div>
+      <div class="fs" role="listitem"><b>③ 偏差处理</b><code>→ CDV</code></div><div class="ar" aria-hidden="true">→</div>
+      <div class="fs" role="listitem"><b>④ PID 计算</b><code>→ Un</code></div><div class="ar" aria-hidden="true">→</div>
+      <div class="fs" role="listitem"><b>⑤ 控制量处理</b><code>→ CMV</code></div><div class="ar" aria-hidden="true">→</div>
+      <div class="fs" role="listitem"><b>⑥ 自动/手动切换</b><code>→ MV</code></div>
+    </div>
+    <h4>5.2.4 PID 计算</h4>
+    <p>PID 计算模块的数据区存放：PID 参数、采样控制周期、微分方式、积分分离值、控制量上限和下限、控制量，以及递推用的历史数据 <span class="m">e(n-1)</span>、<span class="m">e(n-2)</span>、<span class="m">u(n-1)</span>。在自动状态下，按差分方程（如增量式）计算控制量。</p>
+    <h4>5.2.7 PID 参数整定</h4>
+    <ul>
+      <li>要确定的参数：<span class="m">K_p,\ T_I,\ T_D</span>，以及采样周期 <span class="m">T</span>。</li>
+      <li>被控对象模型<strong>已知</strong>时，可以用理论分析加仿真；模型<strong>难以准确获得</strong>时，用<strong>现场实验</strong>的方法整定。</li>
+      <li>采样周期远小于被控对象的时间常数（约 0.1 倍）时，属于<strong>准连续 PID 控制</strong>，可以沿用连续 PID 的整定方法：<strong>扩充临界比例度法、扩充阶跃响应曲线法、试凑法</strong>。也可以借助 MATLAB/Simulink 仿真。</li>
+    </ul>
+    <div class="callout key"><span class="label">试凑法：先比例，后积分，再微分</span>
+      <ol class="steps" style="margin-bottom:0">
+        <li><strong>只用比例</strong>：Kp 由小到大调整，直到响应快、超调小。如果稳态误差已经满足要求，只用比例控制即可。</li>
+        <li><strong>加入积分</strong>：稳态误差不满足要求时加入积分。先设一个较小的 KI，同时把 Kp 略微减小（例如取原值的 0.8 倍）；再逐步增大 KI，在保持良好动态性能的同时消除稳态误差。反复调整 Kp 和 KI，直到满意。</li>
+        <li><strong>加入微分</strong>：PI 消除了稳态误差，但动态过程仍不满意（如超调大）时，加入微分。KD 由小到大逐步增加，同时相应调整 Kp、KI，直到满意。</li>
+      </ol></div>
+    <p class="small muted">注：“例如取原值的 0.8 倍”为常见经验做法，课件原文只写了“将 Kp 减小一些”。可以用上面的 <a href="#lab-pid">PID 仿真实验</a>按这三步亲手整定一遍。</p>
+    <div class="callout warn"><span class="label">课上练习：由阶跃响应曲线判断性能并调参</span>
+      <ul>
+        <li><strong>稳态值不等于给定值</strong>（有稳态误差）→ 准确性不够 → 增大 Kp 或加入（增大）积分 KI。</li>
+        <li><strong>超调大、振荡次数多</strong> → 平稳性差 → 减小 Kp 或 KI，或加入（增大）微分 KD。</li>
+        <li><strong>上升太慢</strong> → 快速性差 → 适当增大 Kp。</li>
+        <li><strong>输出发散或等幅振荡</strong> → 不稳定 → 减小 Kp、KI，并检查闭环极点。</li>
+      </ul>
+      <p class="small">这是整理者依据 5.1.1 节中 P、I、D 作用总结的判断方法。</p></div>
+  </section>
+
+  <section class="sec" id="c5-hw">
+    <h3>作业与测验详解</h3>
+    <details><summary><span class="q">作业 1：给出 PID 控制的时域与复频域（s 域）数学描述</span><span class="src">作业</span></summary><div class="dbody">
+      <p><strong>时域</strong>：<span class="m">u(t)=K_p\left[e(t)+\frac{1}{T_I}\int_0^te(t)dt+T_D\frac{de(t)}{dt}\right]</span></p>
+      <p><strong>s 域</strong>：<span class="m">G_c(s)=\frac{U(s)}{E(s)}=K_p\left(1+\frac{1}{T_Is}+T_Ds\right)=K_p+\frac{K_I}{s}+K_Ds</span>，其中 <span class="m">K_I=K_p/T_I</span>，<span class="m">K_D=K_pT_D</span>。</p></div></details>
+    <details><summary><span class="q">作业 2：分别阐述 P、I、D 各自对控制系统性能的影响</span><span class="src">作业</span></summary><div class="dbody">
+      <ul><li><strong>P（比例）</strong>：按偏差大小成比例地调节。增大 Kp，响应加快，稳态误差减小；但超调增大，稳定性下降。</li>
+      <li><strong>I（积分）</strong>：对偏差累积，能消除稳态误差，改善稳态性能；但使稳定性下降，容易增大超调。</li>
+      <li><strong>D（微分）</strong>：反映偏差的变化趋势，有超前、预见作用，能减小超调、改善动态性能；但对噪声敏感，会放大高频干扰。</li></ul></div></details>
+    <details><summary><span class="q">作业 3：给出增量式数字 PID 的推导过程</span><span class="src">作业</span></summary><div class="dbody"><p>见 <a href="#c5-2">数字 PID</a> 一节：写出位置式 u(k) 和 u(k−1)，两式相减得 Δu(k) = Kp[e(k) − e(k−1)] + K<sub>I</sub>′e(k) + K<sub>D</sub>′[e(k) − 2e(k−1) + e(k−2)]，整理成 d₀e(k) + d₁e(k−1) + d₂e(k−2)。</p></div></details>
+    <details><summary><span class="q">作业 4：给出试凑法确定 PID 参数的步骤</span><span class="src">作业</span></summary><div class="dbody"><p>先比例，后积分，再微分。详见 <a href="#c5-4">5.2.7 节</a>。</p></div></details>
+    <details><summary><span class="q">小测验：常用的改进型 PID（答两种，说明原理和适用情况）</span><span class="src">小测验</span></summary><div class="dbody">
+      <p>可选任意两种：</p>
+      <ul><li><strong>积分分离</strong>：|e| &gt; E₀ 时取消积分，|e| ≤ E₀ 时才积分；适用于不允许大超调的过程。</li>
+      <li><strong>不完全微分</strong>：PID 输出串联一阶惯性环节 1/(T<sub>f</sub>s + 1) 做低通滤波；适用于有高频干扰的过程。</li>
+      <li><strong>微分先行</strong>：只对被控量 y 微分，不对给定值微分；适用于给定值频繁升降的系统。</li>
+      <li><strong>带死区</strong>：|e| ≤ e₀ 时视偏差为 0；适用于要求控制作用少变动的场合。</li></ul></div></details>
+  </section>
+</section>
+<!-- ================= 公式速查 ================= -->
+<section class="chapter" id="quick">
+  <div class="chapter-head"><div class="num">CHEAT SHEET</div><h2>公式速查</h2><p>考前过一遍最核心的式子。</p></div>
+  <div class="quick" style="margin-top:20px">
+    <div class="box"><div class="k">性能指标</div><span class="mb">e(\infty)=y_d-y(\infty)</span><span class="mb">\sigma=\frac{h(T_m)-h(\infty)}{h(\infty)}\times100\%</span><p class="small">稳定 ⇔ 全部极点实部 &lt; 0</p></div>
+    <div class="box"><div class="k">拉氏变换</div><span class="mb">F(s)=\int_{0_-}^{\infty}f(t)e^{-st}dt</span><p class="small"><span class="m">\delta\to1,\ 1(t)\to\frac{1}{s},\ t\to\frac{1}{s^2},\ e^{-at}\to\frac{1}{s+a}</span></p></div>
+    <div class="box"><div class="k">微分定理</div><span class="mb">L[y'']=s^2Y-sy(0)-y'(0)</span><p class="small">零初值时 <span class="m">\frac{d^k}{dt^k}\to s^k</span></p></div>
+    <div class="box"><div class="k">初值与终值定理</div><span class="mb">f(0)=\lim_{s\to\infty}sF(s),\quad f(\infty)=\lim_{s\to0}sF(s)</span><p class="small">终值定理要求 sF(s) 极点全在左半平面</p></div>
+    <div class="box"><div class="k">部分分式</div><span class="mb">K_i=\left[(s-p_i)F(s)\right]_{s=p_i}</span><span class="mb">f_c=2e^{-\alpha t}[A\cos\beta t-B\sin\beta t]</span></div>
+    <div class="box"><div class="k">结构图</div><span class="mb">\Phi=\frac{G}{1+GH}</span><p class="small">串联相乘，并联相加，负反馈：前向 / (1 + 开环)</p></div>
+    <div class="box"><div class="k">二阶系统</div><span class="mb">\Phi=\frac{\omega_n^2}{s^2+2\xi\omega_ns+\omega_n^2}</span><p class="small">ξ&gt;1 过阻尼，ξ=1 临界，0&lt;ξ&lt;1 欠阻尼，ξ=0 无阻尼</p></div>
+    <div class="box"><div class="k">连续 PID</div><span class="mb">G_c(s)=K_p+\frac{K_I}{s}+K_Ds</span><p class="small"><span class="m">K_I=K_p/T_I,\ K_D=K_pT_D</span></p></div>
+    <div class="box"><div class="k">位置式 PID</div><span class="mb">u(k)=K_pe(k)+K_I'\sum e(m)+K_D'[e(k)-e(k-1)]</span><p class="small"><span class="m">K_I'=K_pT/T_I,\ K_D'=K_pT_D/T</span></p></div>
+    <div class="box"><div class="k">增量式 PID</div><span class="mb">\Delta u(k)=d_0e(k)+d_1e(k-1)+d_2e(k-2)</span><p class="small"><span class="m">d_0=K_p+K_I'+K_D',\ d_1=-(K_p+2K_D'),\ d_2=K_D'</span></p></div>
+  </div>
+</section>
+
+<!-- ================= 自测 ================= -->
+<section class="chapter" id="quiz">
+  <div class="chapter-head"><div class="num">SELF TEST</div><h2>自测练习</h2><p>单选题，点击选项立即判分并显示解析。</p></div>
+  <div class="btnrow" style="margin-top:16px"><button id="quizReset">重新作答</button></div>
+  <div class="quiz" id="quizList"></div>
+  <div class="score" id="quizScore" aria-live="polite">已答 0 / 0 · 正确 0</div>
+</section>
+
+<footer>
+  <p><strong>关于本页</strong></p>
+  <ul>
+    <li>内容依据《物联网控制》课件第一章（V3）、第四章（V12，不含系统辨识）、第五章（V6），按课件顺序整理各节要点。</li>
+    <li>标注“补充”“参考答案”“整理者”的部分为整理时补充的推导、解释或参考答案，不是课件原文；交互实验均为演示用数值仿真。</li>
+    <li>已更正两处课件笔误：拉氏变换表第 15 项的分母；三阶导数微分定理的最后一项。</li>
+  </ul>
+  <p><a href="#top">回到顶部 ↑</a></p>
+</footer>
+</main>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs></svg>
+<style>
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.blk{fill:var(--soft);stroke:var(--muted);stroke-width:1.3}
+.blk.hl-net{fill:var(--blue-soft);stroke:var(--blue)}
+.blk.hl-ad{fill:var(--orange-soft);stroke:var(--orange)}
+.sum{fill:var(--canvas);stroke:var(--muted);stroke-width:1.4}
+.dotp{fill:var(--muted)}
+.bt{fill:var(--text);font-size:14px}
+.lbl{fill:var(--text);font-size:14px;font-style:italic;font-family:var(--serif)}
+.lbl.cn{font-style:normal;font-family:var(--sans);font-size:13px;fill:var(--muted)}
+.sg{fill:var(--text);font-size:15px;font-weight:600}
+</style>
+<script>
+(function(){
+'use strict';
+/* ====================== 公式渲染（轻量 TeX 子集） ====================== */
+var SYM={alpha:'α',beta:'β',gamma:'γ',delta:'δ',Delta:'Δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',xi:'ξ',omega:'ω',Omega:'Ω',sigma:'σ',pi:'π',phi:'φ',varphi:'φ',Phi:'Φ',tau:'τ',lambda:'λ',mu:'μ',infty:'∞',partial:'∂',cdots:'⋯',ldots:'…',prime:'′'};
+var OPS={cdot:'·',times:'×',pm:'±',mp:'∓'};
+var RELS={le:'≤',ge:'≥',leq:'≤',geq:'≥',ne:'≠',approx:'≈',to:'→',rightarrow:'→',Rightarrow:'⇒',Leftrightarrow:'⇔',leftrightarrow:'↔',lt:'<',gt:'>',equiv:'≡'};
+var SPACES={',':'\u2009',';':'\u2005',' ':'\u00a0',quad:'\u2003',qquad:'\u2003\u2003','!':''};
+var FN=['sin','cos','tan','ln','log','exp','arccos','arcsin','arctan','max','min'];
+var DOTS={dot:'·',ddot:'··',dddot:'···'};
+var ACC={dot:'\u0307',ddot:'\u0308',dddot:'\u20db',bar:'\u0305',hat:'\u0302'};
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function tex(src){
+  var i=0,s=src;
+  function ws(){while(i<s.length&&/\s/.test(s[i]))i++;}
+  function seq(close){
+    var out='';
+    while(i<s.length){
+      ws(); if(i>=s.length)break;
+      if(s[i]==='}'){ if(close)i++; return out; }
+      if((s[i]==='-'||s[i]==='+')&&(out===''||/(rel">[^<]*<\/span>|[(\[,]|bo">[^<]*<\/span>|dl">[(\[]<\/span>)$/.test(out))){
+        out+='<span class="un">'+(s[i]==='-'?'−':'+')+'</span>'; i++; continue; }
+      out+=item();
+    }
+    return out;
+  }
+  function rawGroup(){ws(); if(s[i]!=='{')return s[i++]||''; i++; var d=1,st=i; while(i<s.length){if(s[i]==='{')d++; else if(s[i]==='}'){d--; if(!d)break;} i++;} var r=s.slice(st,i); i++; return r;}
+  function arg(){ws(); if(s[i]==='{'){i++; return seq(true);} return base().h;}
+  function item(){
+    var b=base(),sup=null,sub=null;
+    for(;;){ws(); if(s[i]==='^'){i++; sup=arg();} else if(s[i]==='_'){i++; sub=arg();} else break;}
+    if(b.lim&&(sup!==null||sub!==null)) return '<span class="lim">'+(sup!==null?'<span class="lim-sup">'+sup+'</span>':'')+'<span>'+b.h+'</span>'+(sub!==null?'<span class="lim-sub">'+sub+'</span>':'')+'</span>';
+    if(sup!==null&&sub!==null) return b.h+'<span class="ss"><sup>'+sup+'</sup><sub>'+sub+'</sub></span>';
+    return b.h+(sup!==null?'<sup>'+sup+'</sup>':'')+(sub!==null?'<sub>'+sub+'</sub>':'');
+  }
+  function base(){
+    ws(); var c=s[i];
+    if(c===undefined) return {h:''};
+    if(c==='{'){i++; return {h:seq(true)};}
+    if(c==='\\'){
+      i++; var n='';
+      if(/[A-Za-z]/.test(s[i]||'')){while(i<s.length&&/[A-Za-z]/.test(s[i]))n+=s[i++];} else n=s[i++];
+      if(n==='frac'){var a=arg(),b=arg(); return {h:'<span class="frac"><span class="fn">'+a+'</span><span class="fd">'+b+'</span></span>'};}
+      if(n==='sqrt'){return {h:'<span class="sqrt">√<span class="radicand">'+arg()+'</span></span>'};}
+      if(n==='text'||n==='mathrm'){return {h:'<span class="tx">'+esc(rawGroup())+'</span>'};}
+      if(ACC[n]){var x=arg(); if(DOTS[n]) return {h:'<span class="acc"><span class="am">'+DOTS[n]+'</span>'+x+'</span>'}; if(n==='bar') return {h:'<span style="text-decoration:overline">'+x+'</span>'}; var m=x.match(/^<i>(.)<\/i>$/); return {h:m?'<i>'+m[1]+ACC[n]+'</i>':x+ACC[n]};}
+      if(n==='left'||n==='right'){var d=s[i++]; if(d==='.')return {h:''}; if(d==='\\')d=s[i++]; return {h:'<span class="dl">'+esc(d)+'</span>'};}
+      if(n==='sum')return {h:'<span class="bigop">∑</span>',lim:true};
+      if(n==='prod')return {h:'<span class="bigop">∏</span>',lim:true};
+      if(n==='lim')return {h:'<span class="fnm">lim</span>',l
