@@ -1,0 +1,201 @@
+c),ct=(body&&Math.abs(ac-1)<1e-12)?'':numTex(ac); terms.push({neg:c<0,t:ct+body}); }
+  used=[];
+  poles.forEach(function(p,i){if(used[i])return; used[i]=1; var k=K[i];
+    if(p.im===0){addTerm(k.re,expTex(-p.re));}
+    else {var j=poles.findIndex(function(q,jj){return jj!==i&&Math.abs(q.re-p.re)<1e-9&&Math.abs(q.im+p.im)<1e-9;}); used[j]=1;
+      var kp=p.im>0?k:K[j],beta=Math.abs(p.im),alpha=-p.re,bt=(Math.abs(beta-1)<1e-12?'':numTex(beta))+'t',e=expTex(alpha);
+      addTerm(2*kp.re,e+'\\cos '+bt); addTerm(-2*kp.im,e+'\\sin '+bt);}
+  });
+  var ft=terms.map(function(t,k){return (t.neg?'-':(k?'+':''))+t.t;}).join('')||'0';
+  h+='<p>逆变换结果：</p><span class="mb">'+tex('f(t)='+ft+'\\qquad(t\\ge0)')+'</span>';
+  var f0=K.reduce(function(s,k){return s+k.re;},0);
+  h+='<p class="small muted">检验：f(0) = '+fmt(f0,4)+'（应等于初值定理 lim<sub>s→∞</sub> sF(s)）。';
+  var anyRHP=poles.some(function(p){return p.re>1e-9;}),hasZero=poles.some(function(p){return Math.abs(p.re)<1e-12&&p.im===0;});
+  var ok=poles.every(function(p){return p.re<-1e-9||(Math.abs(p.re)<1e-12&&p.im===0);});
+  if(anyRHP)h+=' 存在右半平面极点，f(t) 发散。'; else if(hasZero&&ok)h+=' 终值 f(∞) = '+numTxt(K[poles.findIndex(function(p){return Math.abs(p.re)<1e-12&&p.im===0;})].re)+'。';
+  h+='</p>';
+  out.innerHTML=h;
+  var slow=Infinity; poles.forEach(function(p){if(p.re<-1e-9)slow=Math.min(slow,-p.re);});
+  var tEnd=anyRHP?3:(isFinite(slow)?Math.min(20,Math.max(3,5/slow)):6),N=600,tt=[],yy=[];
+  for(var q=0;q<=N;q++){var t=tEnd*q/N,v=0; for(var r=0;r<n;r++){v+=cmul(K[r],cexp(C(poles[r].re*t,poles[r].im*t))).re;} tt.push(t); yy.push(v);}
+  plot($('pfPlot'),{series:[{x:tt,y:yy,color:cssv('--s1')}],xmin:0,xmax:tEnd,xlabel:'t / s'});
+}
+
+/* ====================== PID 连续仿真 ====================== */
+function initPID(){
+  var sp=$('pidKp'),si=$('pidKi'),sd=$('pidKd'),pl=$('pidPlant');
+  function upd(){
+    var pr=pl.value.split(',').map(Number),b=pr[0],a1=pr[1],a0=pr[2];
+    var Kp=+sp.value,KI=+si.value,KD=+sd.value; $('pidKpV').textContent=Kp.toFixed(1); $('pidKiV').textContent=KI.toFixed(1); $('pidKdV').textContent=KD.toFixed(1);
+    var tEnd=12,N=6000,dt=tEnd/N,x=[0,0,0],T=[0],Yv=[0],U=[Kp],diverged=false;
+    function f(t,s){var e=1-s[0],u=Kp*e+KI*s[2]-KD*s[1]; return [s[1],b*u-a1*s[1]-a0*s[0],e];}
+    for(var k=1;k<=N;k++){x=rk4(f,x,0,dt); if(!isFinite(x[0])||Math.abs(x[0])>1e6){diverged=true;break;} if(k%5===0){T.push(k*dt); Yv.push(x[0]); U.push(Kp*(1-x[0])+KI*x[2]-KD*x[1]);}}
+    var ch=KI>0?[1,a1+b*KD,a0+b*Kp,b*KI]:[1,a1+b*KD,a0+b*Kp];
+    var ps=roots(ch),maxRe=Math.max.apply(null,ps.map(function(p){return p.re;}));
+    var stable=maxRe<-1e-9,marginal=!stable&&maxRe<1e-9;
+    var yinf=stable?(KI>0?1:(b*Kp)/(a0+b*Kp)):NaN;
+    var m=stable?stepMetrics(T,Yv,yinf,0.02):null;
+    var cfg={series:[{x:T,y:Yv,color:cssv('--s1')}],xmin:0,xmax:tEnd,xlabel:'t / s',hlines:[{y:1,label:'r = 1'}]};
+    if(!stable){cfg.ymin=-1; cfg.ymax=3;} else {cfg.ymin=0; cfg.ymax=Math.max(1.2,Math.ceil((m.peak+0.05)*5)/5);}
+    plot($('pidPlot'),cfg);
+    var uc={series:[{x:T,y:U,color:cssv('--s2')}],xmin:0,xmax:tEnd,xlabel:'t / s'}; if(!stable){var um=Math.max(5,Kp*2+KI); uc.ymin=-um; uc.ymax=um;}
+    plot($('pidU'),uc);
+    var ess=stable?1-yinf:NaN;
+    $('pidMetrics').innerHTML=metricHTML([
+      ['超调量 σ',stable?fmt(m.os,1)+'%':'—'],
+      ['上升时间 Tr',stable&&m.Tr!==null?fmt(m.Tr,2)+' s':'—'],
+      ['调节时间（±2%）',stable?(m.Ts===null?'> 12 s':fmt(m.Ts,2)+' s'):'—'],
+      ['稳态值 y(∞)',stable?fmt(yinf,4):'—'],
+      ['稳态误差 e(∞)',stable?fmt(ess,4):'—']
+    ]);
+    var chTex='s^3+'+fmt(ch[1],2)+'s^2+'+fmt(ch[2],2)+'s+'+fmt(ch[3],2);
+    if(ch.length===3)chTex='s^2+'+fmt(ch[1],2)+'s+'+fmt(ch[2],2);
+    chTex=chTex.replace(/\+−/g,'-');
+    var gTxt=b===1?'1':String(b),gcTex='G_c(s)='+fmt(Kp,2)+(KI>0?'+\\frac{'+fmt(KI,2)+'}{s}':'')+(KD>0?'+'+fmt(KD,2)+'s':'');
+    var verdict=stable?'<p class="verdict ok">稳定：全部闭环极点实部 &lt; 0。'+(KI>0?'含积分作用，阶跃输入下稳态误差为 0。':(Math.abs(a0)<1e-12?'对象本身含积分环节，P/PD 控制即可无稳态误差。':'没有积分作用，存在稳态误差 e(∞) = '+fmt(a0,2)+' / ('+fmt(a0,2)+' + '+fmt(b*Kp,2)+') = '+fmt(ess,4)+'。'))+'</p>'
+      :(marginal?'<p class="verdict mid">临界：有极点落在虚轴上，不满足稳定条件。</p>':'<p class="verdict bad">不稳定：有闭环极点在右半平面，输出发散。试着减小 KI 或增大 KD、Kp。</p>');
+    $('pidPoles').innerHTML='<p class="small" style="margin-bottom:4px">控制器：<span class="m">'+tex(gcTex)+'</span></p><p class="small" style="margin-bottom:4px">闭环特征方程：<span class="m">'+tex(chTex+'=0')+'</span></p><p class="small" style="margin-bottom:4px">闭环极点：'+ps.map(function(p){return cstr(p,3);}).join('，')+'</p>'+verdict;
+    splane($('pidPlane'),ps,[],{});
+  }
+  [sp,si,sd].forEach(function(e){e.addEventListener('input',upd);}); pl.addEventListener('change',upd);
+  [].forEach.call(document.querySelectorAll('[data-pid]'),function(bn){bn.addEventListener('click',function(){var v=bn.dataset.pid.split(',');sp.value=v[0];si.value=v[1];sd.value=v[2];upd();});});
+  upd();
+}
+
+/* ====================== 增量式 PID 计算器 ====================== */
+function initInc(){
+  var ids=['incKp','incTi','incTd','incT','incE'];
+  function upd(){
+    var Kp=+$('incKp').value,Ti=+$('incTi').value,Td=+$('incTd').value,T=+$('incT').value;
+    var es=$('incE').value.split(/[,，\s]+/).filter(Boolean).map(Number);
+    var tb=$('incTable').querySelector('tbody');
+    if(!(Ti>0)||!(T>0)||!isFinite(Kp)||!(Td>=0)||es.some(function(v){return !isFinite(v);})){ $('incCoef').innerHTML='<p class="err-msg">请检查输入：T<sub>I</sub>、T 必须大于 0，偏差序列为逗号分隔的数字。</p>'; tb.innerHTML=''; return; }
+    var KI=Kp*T/Ti,KD=Kp*Td/T,d0=Kp+KI+KD,d1=-(Kp+2*KD),d2=KD;
+    $('incCoef').innerHTML='<p class="small">'+'<span class="m">'+tex("K_I'=\\frac{K_pT}{T_I}="+fmt(KI,4).replace('−','-'))+'</span>，<span class="m">'+tex("K_D'=\\frac{K_pT_D}{T}="+fmt(KD,4).replace('−','-'))+'</span><br><span class="m">'+tex('d_0='+fmt(d0,4).replace('−','-')+',\\quad d_1='+fmt(d1,4).replace('−','-')+',\\quad d_2='+fmt(d2,4).replace('−','-'))+'</span></p>';
+    var u=0,e1=0,e2=0,sum=0,rows='';
+    es.slice(0,40).forEach(function(e,k){var du=d0*e+d1*e1+d2*e2; u+=du; sum+=e; var up=Kp*e+KI*sum+KD*(e-e1);
+      rows+='<tr><td class="c">'+k+'</td><td>'+fmtFixed(e,4)+'</td><td>'+fmtFixed(du,4)+'</td><td>'+fmtFixed(u,4)+'</td><td>'+fmtFixed(up,4)+(Math.abs(up-u)<1e-9?' ✓':'')+'</td></tr>'; e2=e1; e1=e;});
+    tb.innerHTML=rows;
+  }
+  ids.forEach(function(id){$(id).addEventListener('input',upd);}); upd();
+}
+
+/* ====================== 改进 PID 对比 ====================== */
+function rng(seed){var s=seed>>>0; return function(){s=(s*1664525+1013904223)>>>0; return s/4294967296;};}
+function simD(o){
+  var a1=3,a0=2,T=o.T,N=Math.round(o.tEnd/T),KI=o.TI>0?o.Kp*T/o.TI:0,KD=o.Kp*o.TD/T;
+  var x=[0,0],sum=0,ep=0,ymp=0,up=0,rnd=rng(7),out={t:[],y:[],u:[],r:[]};
+  function f(t,s,u){return [s[1],u-a1*s[1]-a0*s[0]];}
+  for(var k=0;k<=N;k++){
+    var t=k*T,r=o.r(t),ym=x[0]+(o.noise?o.noise*(rnd()*2-1):0),e=r-ym;
+    if(o.dead&&Math.abs(e)<=o.dead)e=0;
+    sum+=e; var Kl=(o.E0!=null&&Math.abs(e)>o.E0)?0:1;
+    var d=o.dfirst?-(ym-(k?ymp:ym)):(e-(k?ep:0));
+    var u=o.Kp*e+Kl*KI*sum+KD*d;
+    if(o.Tf){var al=o.Tf/(o.Tf+T); u=al*up+(1-al)*u;}
+    out.t.push(t); out.y.push(x[0]); out.u.push(u); out.r.push(r);
+    var uu=u,h=T/10; for(var q=0;q<10;q++)x=rk4(function(tt,s){return f(tt,s,uu);},x,0,h);
+    ep=e; ymp=ym; up=u;
+  }
+  return out;
+}
+function uStats(o){var s=0,c=0,mx=0; for(var k=1;k<o.u.length;k++){var d=Math.abs(o.u[k]-o.u[k-1]); s+=d; if(d>1e-9)c++;} o.u.forEach(function(v){mx=Math.max(mx,Math.abs(v));}); return {tv:s,changes:c,umax:mx};}
+function tailErr(o,sec){var n=Math.round(sec/(o.t[1]-o.t[0])),s=0,c=0; for(var k=o.t.length-n;k<o.t.length;k++){s+=Math.abs(o.r[k]-o.y[k]);c++;} return s/c;}
+var IMP={
+  sep:{desc:'<strong>积分分离</strong>：偏差大于阈值 E₀ 时不加积分，偏差进入 ±E₀ 后才加积分，以减小超调。基本参数 Kp = 10，T<sub>I</sub> = 0.5 s，T<sub>D</sub> = 0.1 s，T = 0.02 s。',
+    p:{label:'积分分离阈值 E₀',min:0.05,max:1,step:0.05,val:0.2,d:2},
+    run:function(v){var b={T:0.02,tEnd:8,r:function(){return 1;},Kp:10,TI:0.5,TD:0.1}; return [simD(b),simD(Object.assign({},b,{E0:v}))];},
+    rows:function(s,m){var a=stepMetrics(s.t,s.y,1,0.02),b=stepMetrics(m.t,m.y,1,0.02); return [['超调量 σ',fmt(a.os,1)+'%',fmt(b.os,1)+'%'],['调节时间（±2%）',a.Ts===null?'> 8 s':fmt(a.Ts,2)+' s',b.Ts===null?'> 8 s':fmt(b.Ts,2)+' s']];}},
+  filt:{desc:'<strong>不完全微分</strong>：测量值含高频噪声时，标准微分会把噪声放大，控制量剧烈抖动。在 PID 输出端串联 1/(T<sub>f</sub>s + 1) 后，控制量平滑得多；代价是微分的阻尼作用被削弱，本例超调有所增大。基本参数同上。',
+    p:{label:'滤波时间常数 T<sub>f</sub>（s）',min:0.01,max:0.3,step:0.01,val:0.05,d:2},
+    run:function(v){var b={T:0.02,tEnd:8,r:function(){return 1;},Kp:10,TI:0.5,TD:0.1,noise:0.01}; return [simD(b),simD(Object.assign({},b,{Tf:v}))];},
+    rows:function(s,m){var a=uStats(s),b=uStats(m),c=stepMetrics(s.t,s.y,1,0.02),d=stepMetrics(m.t,m.y,1,0.02); return [['控制量总变动 Σ|Δu|',fmt(a.tv,1),fmt(b.tv,1)],['控制量峰值 max|u|',fmt(a.umax,1),fmt(b.umax,1)],['超调量 σ',fmt(c.os,1)+'%',fmt(d.os,1)+'%']];}},
+  dfirst:{desc:'<strong>微分先行</strong>：给定值在 t = 3 s、6 s 处阶跃升降。标准 PID 对偏差微分，给定值一跳变，控制量就出现很大的尖峰（“微分冲击”）；微分先行只对 y 微分，没有这个冲击；代价是给定值变化时少了微分的抑制，被控量峰值可能略高。',
+    p:{label:'微分时间常数 T<sub>D</sub>（s）',min:0.02,max:0.3,step:0.01,val:0.1,d:2},
+    run:function(v){var b={T:0.02,tEnd:9,r:function(t){return t<3?1:(t<6?2:1);},Kp:10,TI:0.5,TD:v}; return [simD(b),simD(Object.assign({},b,{dfirst:true}))];},
+    rows:function(s,m){var a=uStats(s),b=uStats(m); return [['控制量峰值 max|u|',fmt(a.umax,1),fmt(b.umax,1)],['控制量总变动 Σ|Δu|',fmt(a.tv,1),fmt(b.tv,1)],['被控量最大值',fmt(Math.max.apply(null,s.y),3),fmt(Math.max.apply(null,m.y),3)]];}},
+  dead:{desc:'<strong>带死区</strong>：偏差落在 ±e₀ 内时视为 0，控制量保持不变，执行机构（如阀门）动作次数明显减少，代价是允许 ±e₀ 以内的偏差。基本参数 Kp = 5，T<sub>I</sub> = 1 s，T = 0.05 s（PI）。',
+    p:{label:'死区宽度 e₀',min:0.005,max:0.08,step:0.005,val:0.02,d:3},
+    run:function(v){var b={T:0.05,tEnd:10,r:function(){return 1;},Kp:5,TI:1,TD:0,noise:0.01}; return [simD(b),simD(Object.assign({},b,{dead:v}))];},
+    rows:function(s,m){var a=uStats(s),b=uStats(m); return [['控制量变动次数（共 200 拍）',String(a.changes),String(b.changes)],['控制量总变动 Σ|Δu|',fmt(a.tv,2),fmt(b.tv,2)],['最后 3 s 平均偏差 |r − y|',fmt(tailErr(s,3),4),fmt(tailErr(m,3),4)]];}}
+};
+function initImp(){
+  var tabs=[].slice.call(document.querySelectorAll('[data-imp]')),cur='sep',val={};
+  function render(){
+    var sc=IMP[cur],v=val[cur]; var res=sc.run(v),s=res[0],m=res[1];
+    plot($('impY'),{series:[{x:s.t,y:s.r,color:cssv('--muted'),width:1.2,dash:[5,4],stairs:true},{x:s.t,y:s.y,color:cssv('--s1')},{x:m.t,y:m.y,color:cssv('--s2')}],xmin:0,xmax:s.t[s.t.length-1],xlabel:'t / s'});
+    plot($('impU'),{series:[{x:s.t,y:s.u,color:cssv('--s1'),width:1.5,stairs:true},{x:m.t,y:m.u,color:cssv('--s2'),width:1.5,stairs:true}],xmin:0,xmax:s.t[s.t.length-1],xlabel:'t / s'});
+    $('impTable').querySelector('tbody').innerHTML=sc.rows(s,m).map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td><strong>'+r[2]+'</strong></td></tr>';}).join('');
+  }
+  function show(k){cur=k; tabs.forEach(function(b){b.setAttribute('aria-selected',b.dataset.imp===k?'true':'false');});
+    var sc=IMP[k]; if(val[k]===undefined)val[k]=sc.p.val; $('impDesc').innerHTML=sc.desc;
+    $('impCtl').innerHTML='<div class="ctl"><label for="impP">'+sc.p.label+' <output id="impPV">'+val[k].toFixed(sc.p.d)+'</output></label><input type="range" id="impP" min="'+sc.p.min+'" max="'+sc.p.max+'" step="'+sc.p.step+'" value="'+val[k]+'"></div>';
+    $('impP').addEventListener('input',function(e){val[cur]=+e.target.value; $('impPV').textContent=val[cur].toFixed(sc.p.d); render();});
+    render();}
+  tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.imp);});});
+  show('sep');
+}
+
+/* ====================== 自测题 ====================== */
+function qx(t){return esc(t).replace(/([A-Za-z])_([A-Za-z0-9]+)/g,'$1<sub>$2</sub>');}
+var QUIZ=[
+ ['被公认为第一个自动控制系统的是：',['麦克斯韦的调速器理论（1868）','瓦特飞球调节器（1788）','维纳的控制论（1948）','直流电机调速系统'],1,'1788 年瓦特飞球调节器是第一个自动控制系统；1868 年麦克斯韦《论调速器》是控制理论的开端；1948 年维纳创立控制论。'],
+ ['麦克斯韦在《论调速器》中把稳定性问题归结为：',['飞球的质量大小','特征根实部的正负号','阀门开度的大小','采样周期的长短'],1,'他从整个系统建立微分方程，稳定性取决于特征根实部的正负号。'],
+ ['在瓦特飞球调节器中，飞球相当于：',['控制器','执行器','传感器','被控对象'],2,'飞球检测转速，相当于传感器；杠杆机构是控制器，蒸汽阀门是执行器。'],
+ ['与计算机控制系统相比，物联网控制系统框图的主要区别是：',['去掉了传感器','增加了 A/D 和 D/A','在“控制器 → D/A”和“A/D → 比较点”之间插入网络','改为开环控制'],2,'A/D、D/A 是计算机控制系统相对于自动控制系统新增的环节；物联网控制系统又插入了网络。'],
+ ['关于开环控制，正确的是：',['被控量参与控制','结构简单、能保证稳定，但受扰动影响大、有扰动时精度差','精度一定比闭环高','适合扰动很多的复杂场合'],1,'开环控制中被控量对控制作用没有影响，适用于逻辑控制、顺序控制、扰动少的场合。'],
+ ['计算机通过 AI/DI 采集信号，按控制规律计算后经 AO/DO 直接控制执行机构，这种类型是：',['操作指导控制 OIS','直接数字控制 DDC','监督控制 SCC','集散控制 DCS'],1,'DDC 是闭环控制，要求实时性好、可靠性高、适应性强。'],
+ ['“分散控制、集中操作、分级管理”描述的是：',['DDC','SCC','DCS','OIS'],2,'DCS 分为分散过程控制级、集中操作监控级、综合信息管理级。'],
+ ['系统稳定的条件是：',['全部零点的实部小于零','全部极点（特征根）的实部小于零','至少一个极点在左半平面','极点全部在虚轴上'],1,'零点不影响稳定性；只要有一个极点在右半平面，系统就不稳定。'],
+ ['下列哪个是线性定常系统？',['y″ + 3y′ + 2y = u','y″ + 3y′ + 2y = u + 5','y″ + 3y′ + 2√y = u','y″ + 3t·y′ + 2y = u'],0,'第二个含常数项，是非线性；第三个含 √y，是非线性；第四个系数含 t，是线性时变系统。'],
+ ['L[e^(−at)] 等于：',['1/(s − a)','1/(s + a)','a/(s + a)','s/(s + a)'],1,'∫₀^∞ e^(−at)e^(−st)dt = 1/(s + a)。'],
+ ['L[sin ωt] 等于：',['s/(s² + ω²)','ω/(s² + ω²)','1/(s² + ω²)','ω/(s² − ω²)'],1,'由欧拉公式推导；cos ωt 对应 s/(s² + ω²)。'],
+ ['Y(s) = 3/[s(s − 2)]，能否用终值定理求 y(∞)？',['能，y(∞) = −1.5','能，y(∞) = 0','不能，sY(s) 有右半平面极点，y(t) 发散','不能，因为分子是常数'],2,'sY(s) = 3/(s − 2) 的极点 +2 在右半平面，实际 y(t) = 1.5(−1 + e^(2t)) → ∞。'],
+ ['G(s) = 2(s + 1)(s − 2) / [(s + 3)(s² + 2s + 2)] 的稳定性：',['不稳定，因为有零点 +2','稳定，极点 −3、−1 ± j 全在左半平面','临界稳定','无法判断'],1,'稳定性只看极点；右半平面的零点不影响稳定性。'],
+ ['前向通路为 G、反馈通路为 H 的负反馈系统，闭环传递函数是：',['G/(1 − GH)','G/(1 + GH)','GH/(1 + G)','1/(1 + GH)'],1,'闭环传递函数 = 前向通路传递函数 / (1 + 开环传递函数)。'],
+ ['二阶系统阻尼比 0 < ξ < 1 时称为：',['过阻尼','临界阻尼','欠阻尼','无阻尼'],2,'欠阻尼时有一对实部为负的共轭复极点，阶跃响应衰减振荡。'],
+ ['G(s) = 1/(s² + 5s + 5)，单位负反馈，单位阶跃输入，稳态误差 e(∞) 为：',['0','1/6','5/6','1/5'],2,'Φ = 1/(s² + 5s + 6)，y(∞) = 1/6，e(∞) = 1 − 1/6 = 5/6。'],
+ ['一般来说，增大比例系数 Kp 会：',['上升变慢，超调减小','上升加快，超调增大，稳态误差减小','消除稳态误差，同时提高稳定性','对动态性能没有影响'],1,'比例作用改善稳态性能，但会降低稳定性。'],
+ ['能消除稳态误差、但会降低稳定性的是：',['比例 P','积分 I','微分 D','死区'],1,'积分作用改善稳态性能，但降低稳定性，容易产生较大超调。'],
+ ['增量式 PID 中，d₂ 等于：',['Kp','−(Kp + 2K_D′)','K_D′','Kp + K_I′ + K_D′'],2,'d₀ = Kp + K_I′ + K_D′，d₁ = −(Kp + 2K_D′)，d₂ = K_D′。'],
+ ['位置式 PID 的主要缺点是：',['不能实现积分作用','每次输出与过去全部状态有关，偏差累加，易产生较大累积误差','只能用于模拟调节器','不能计算微分'],1,'增量式只需最近三次偏差，克服了这一缺点。'],
+ ['给定值频繁升降，希望避免控制量冲击，应选：',['积分分离 PID','不完全微分 PID','微分先行 PID','带死区 PID'],2,'微分先行只对被控量 y(t) 微分，对给定值没有微分作用。'],
+ ['过程中存在高频扰动，标准微分过于灵敏，应选：',['积分分离 PID','不完全微分 PID','微分先行 PID','带死区 PID'],1,'在 PID 输出端串联一阶惯性环节（低通滤波）。'],
+ ['动态过程不积分、接近稳态才积分，是哪种改进算法？',['积分分离','不完全微分','微分先行','带死区'],0,'|e(k)| > E₀ 时逻辑系数 Kl = 0，|e(k)| ≤ E₀ 时 Kl = 1。'],
+ ['用试凑法整定 PID 参数的顺序是：',['先积分，后比例，再微分','先比例，后积分，再微分','先微分，后比例，再积分','三个参数同时调整'],1,'先比例，后积分，再微分；加入积分时把 Kp 适当减小。']
+];
+function initQuiz(){
+  var box=$('quizList'),ans={},LET='ABCD';
+  function score(){var n=0,c=0; for(var k in ans){n++; if(ans[k])c++;} $('quizScore').textContent='已答 '+n+' / '+QUIZ.length+' · 正确 '+c;}
+  function build(){
+    ans={};
+    box.innerHTML=QUIZ.map(function(q,k){return '<div class="qcard" data-q="'+k+'"><div class="qt">'+qx(q[0])+'</div><div class="opts">'+q[1].map(function(o,j){return '<button data-o="'+j+'">'+LET[j]+'. '+qx(o)+'</button>';}).join('')+'</div><div class="qfb" aria-live="polite"></div></div>';}).join('');
+    score();
+  }
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-o]'); if(!b)return; var card=b.closest('.qcard'),k=+card.dataset.q; if(k in ans)return;
+    var q=QUIZ[k],j=+b.dataset.o,ok=j===q[2]; ans[k]=ok;
+    [].forEach.call(card.querySelectorAll('button'),function(x,jj){x.disabled=true; if(jj===q[2])x.classList.add('right'); else if(jj===j)x.classList.add('wrong');});
+    var fb=card.querySelector('.qfb'); fb.innerHTML=(ok?'<strong style="color:var(--green-text)">✓ 正确。</strong>':'<strong style="color:var(--red-text)">✗ 错误，正确答案是 '+LET[q[2]]+'。</strong>')+qx(q[3]); fb.classList.add('show'); score();
+  });
+  $('quizReset').addEventListener('click',build);
+  build();
+}
+
+/* ====================== 启动 ====================== */
+function zp(){
+  splane($('zpPlot'),[C(-3),C(-1,1),C(-1,-1)],[C(-1),C(2)],{labels:[{re:-3,im:0,t:'−3',dx:0,dy:-12,anchor:'middle'},{re:-1,im:1,t:'−1+j',dx:-10,dy:-6,anchor:'end'},{re:-1,im:-1,t:'−1−j',dx:-10,dy:16,anchor:'end'},{re:2,im:0,t:'+2',dx:0,dy:24,anchor:'middle'},{re:-1,im:0,t:'−1',dx:0,dy:24,anchor:'middle'}]});
+}
+function safe(fn,name){try{fn();}catch(err){if(window.console)console.error('['+name+']',err);}}
+function init(){
+  safe(renderMath,'math'); safe(initToc,'toc'); safe(initBD,'bd'); safe(initPerf,'perf'); safe(initLT,'lt'); safe(initPF,'pf'); safe(zp,'zp');
+  safe(initSecond,'second'); safe(initPID,'pid'); safe(initInc,'inc'); safe(initImp,'imp'); safe(initQuiz,'quiz');
+  if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)'); var h=function(){
+    safe(initPerf,'perf'); ['soXi','pidKp'].forEach(function(id){var e=$(id); if(e)e.dispatchEvent(new Event('input'));}); var p=$('impP'); if(p)p.dispatchEvent(new Event('input')); safe(calc,'pf');};
+    if(mq.addEventListener)mq.addEventListener('change',h); else if(mq.addListener)mq.addListener(h);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+</body>
+</html>
